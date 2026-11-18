@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <link rel="icon" href="data:,">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>弄堂深处 · 首页试样（固定机位试样）</title>
+<title>弄堂深处 · 一九九四年 上海 回阿婆家</title>
 <style>
 :root{--paper:#f4efe1;--paper2:#ebe3cf;--ink:#2f4a3a;--ink2:#6b6a5a;--seal:#a63a2b;--night:#14110e;--cream:#f3ead4}
 *{box-sizing:border-box}
@@ -46,7 +46,8 @@ html,body{margin:0;height:100%;background:var(--night);overflow:hidden;color:var
 #card:not(.on){pointer-events:none}
 .foot{font-size:12px;letter-spacing:.3em;color:var(--ink2);padding-left:.3em;white-space:nowrap}
 
-#hint{position:fixed;right:clamp(20px,3vw,44px);bottom:clamp(18px,3vh,34px);display:flex;gap:1.4em;align-items:center;
+#hint{position:fixed;left:clamp(24px,4.6vw,72px);bottom:clamp(18px,3vh,34px);   /* 放左下、和左边卡片对齐：右下角是“声音”按钮（bgm.js） */
+  display:flex;gap:1.4em;align-items:center;
   padding:.7em 1.3em .7em 1.6em;background:rgba(244,239,225,.9);border:1px solid rgba(47,74,58,.3);
   font-size:12px;letter-spacing:.3em;color:var(--ink);pointer-events:none;opacity:0;transition:opacity 1.2s 1s}
 #hint.on{opacity:1}
@@ -177,15 +178,71 @@ body.entry-direct #card,body.entry-direct #hint{opacity:0;transition:opacity .5s
 <div id="fade"></div>
 <div id="caption">一九九四年 · 上海<small>进门这一段还没接上</small></div>
 <div id="loading"><h1>弄堂深处</h1><div class="sub">一九九四年 · 上海</div><div class="bar"><i></i></div>
-  <div class="step" id="lstep">正在搬砖瓦…</div><div class="sec" id="lsec"></div><div class="sec" id="lsize" style="color:#e3c88e"></div><div class="sec" id="lnote" style="text-align:center;line-height:2;letter-spacing:.08em">首次打开需下载约 690MB，再次打开会快很多<br><a href="report/" target="_blank" rel="noopener" style="color:#e3c88e">项目报告书</a>　·　<a href="https://github.com/rullerzhou-afk/nongtang-shenchu" target="_blank" rel="noopener" style="color:#e3c88e">GitHub</a></div><div class="sec" id="lcopy" style="position:absolute;bottom:22px;left:0;right:0;text-align:center;font-size:11px;letter-spacing:.06em;opacity:.55">© 2026 <a href="https://github.com/rullerzhou-afk" target="_blank" rel="noopener" style="color:inherit">rullerzhou-afk</a> 保留所有权利</div></div>
+  <div class="step" id="lstep">正在搬砖瓦…</div><div class="sec" id="lsec"></div><div class="sec" id="lsize" style="color:#e3c88e"></div><div class="sec" id="lnote" style="text-align:center;line-height:2;letter-spacing:.08em">首次打开需下载约 690MB，再次打开会快很多　·　<a href="https://github.com/rullerzhou-afk/nongtang-shenchu" target="_blank" rel="noopener" style="color:#e3c88e">GitHub</a></div><div class="sec" id="lcopy" style="position:absolute;bottom:22px;left:0;right:0;text-align:center;font-size:11px;letter-spacing:.06em;opacity:.55">© 2026 <a href="https://github.com/rullerzhou-afk" target="_blank" rel="noopener" style="color:inherit">rullerzhou-afk</a> 保留所有权利</div></div>
 <script type="module" src="./home.js?v=hall-stair-cue-20261118"></script>
 <script type="module" src="./bgm.js?v=title-autoplay-20261118"></script>
 <script type="module" src="./sfx.js?v=20261118b"></script>
-<script>/* 部署版：真实下载进度（scripts/build_cf_site.py） */
+<script>/* 部署版：真实下载进度；首页能玩之后在后台把屋里的东西下完（scripts/build_cf_site.py） */
 (function () {
-  var HOME = 330 * 1048576, INDOOR = 360 * 1048576, own = 0, mark = null;
-  try { new PerformanceObserver(function (l) { l.getEntries().forEach(function (e) { own += (e.encodedBodySize || e.transferSize || 0); }); }).observe({ type: 'resource', buffered: true }); } catch (e) {}
-  function bytes() { var b = own; try { var w = document.getElementById('view').contentWindow; b += (w.__dlBytes || 0) + (w.__dlLive || 0); } catch (e) {} return b; }
+  var HOME = 330 * 1048576, INDOOR = 360 * 1048576, own = 0, homeMark = null;
+  var FAST = new URL('shikumen-house-v3.2/fast/', location.href).href;
+  // 这一页自己下的文件（游戏脚本、图片、声音）；整屋文件由下面的后台预下载单独计数
+  try { new PerformanceObserver(function (l) { l.getEntries().forEach(function (e) { if (e.name.indexOf(FAST) !== 0) own += (e.encodedBodySize || e.transferSize || 0); }); }).observe({ type: 'resource', buffered: true }); } catch (e) {}
+
+  // ---- 后台预下载：首页加载完就开始，下到内存里，整屋的 three.js 和 data-runtime 来取（window.__PRE） ----
+  var items = new Map(), queue = [], qi = 0, flight = 0, LIMIT = 8, got = 0, total = 0, left = 0, ready = false, waiting = false;
+  function phase() { return window.__HOME && __HOME.entry && __HOME.entry.stats && __HOME.entry.stats.indoor && __HOME.entry.stats.indoor.phase; }
+  function busy() { var ph = phase(); return ph === 'opening' || ph === 'noted' || ph === 'loading'; }   // 推门那几秒，网速让给进屋马上要用的文件
+  function finish(it, blob) {
+    if (it.state === 'flight') { it.state = blob ? 'done' : 'failed'; it.blob = blob; }
+    flight--; left--;
+    if (it.resolve) it.resolve(it.state === 'done' ? blob : null);
+    pump();
+  }
+  function start(it) {
+    it.state = 'flight'; flight++; it.ctl = new AbortController();
+    fetch(it.href, { priority: 'low', signal: it.ctl.signal }).then(function (r) {
+      if (!r.ok) throw new Error(String(r.status));
+      var reader = r.body.getReader(), chunks = [];
+      return (function next() { return reader.read().then(function (x) { if (x.done) return new Blob(chunks); chunks.push(x.value); got += x.value.length; return next(); }); })();
+    }).then(function (b) { finish(it, b); }, function () { finish(it, null); });
+  }
+  function pump() {
+    if (busy()) { if (!waiting) { waiting = true; setTimeout(function () { waiting = false; pump(); }, 400); } return; }
+    while (flight < LIMIT && qi < queue.length) { var it = queue[qi++]; if (it.state === 'queued') start(it); }
+  }
+  function begin() {
+    fetch(FAST + 'prefetch-list.json').then(function (r) { return r.json(); }).then(function (list) {
+      var seen = new Set();
+      try { document.getElementById('view').contentWindow.performance.getEntriesByType('resource').forEach(function (e) { seen.add(e.name); }); } catch (e) {}
+      list.forEach(function (x) {
+        var href = FAST + x[0]; if (seen.has(href) || items.has(href)) return;
+        var it = { href: href, state: 'queued' }; items.set(href, it); queue.push(it); total += x[1];
+      });
+      left = queue.length; ready = true; pump();
+    }).catch(function () {});
+  }
+  window.__PRE = {
+    take: function (href) {   // 贴图（同步）：下好的交出去（留着，有的贴图两间房共用）；正在下或还没轮到的停掉，让游戏自己下
+      var it = items.get(href); if (!it) return null;
+      if (it.state === 'done') return it.blob;
+      if (it.state === 'flight') { it.state = 'taken'; try { it.ctl.abort(); } catch (e) {} return null; }
+      if (it.state === 'queued') { it.state = 'taken'; left--; }
+      return null;
+    },
+    get: function (href) {    // 模型数据（异步）：正在下的等它下完
+      var it = items.get(href); if (!it) return null;
+      if (it.state === 'done') { var b = it.blob; it.blob = null; it.state = 'used'; return Promise.resolve(b); }
+      if (it.state === 'flight') return new Promise(function (res) { it.resolve = function (b) { it.blob = null; it.state = 'used'; res(b); }; });
+      if (it.state === 'queued') { it.state = 'taken'; left--; }
+      return null;
+    },
+    stat: function () { return { ready: ready, got: got, total: total, left: left, flight: flight }; }
+  };
+
+  function bytes() { var b = own + got; try { var w = document.getElementById('view').contentWindow; b += (w.__dlBytes || 0) + (w.__dlLive || 0); } catch (e) {} return b; }
+  function net() { try { return document.getElementById('view').contentWindow.__dlNet || 0; } catch (e) { return 0; } }   // 整屋页真从网络下的
+  var netMark = 0;
   function mb(b) { return Math.round(b / 1048576); }
   var bar = document.querySelector('#loading .bar i'), size = document.getElementById('lsize');
   var t = setInterval(function () {
@@ -196,14 +253,15 @@ body.entry-direct #card,body.entry-direct #hint{opacity:0;transition:opacity .5s
       if (size) size.textContent = '已下载 ' + mb(b) + ' / 约 ' + mb(HOME) + ' MB';
       return;
     }
-    var note = document.getElementById('fpnote'), ph = window.__HOME && __HOME.entry && __HOME.entry.stats && __HOME.entry.stats.indoor && __HOME.entry.stats.indoor.phase;
+    if (homeMark === null) { homeMark = b; netMark = net(); begin(); }
+    var note = document.getElementById('fpnote'), ph = phase();
     if (!note) return;
-    var line = document.getElementById('fpnotesize');
-    if (note.classList.contains('on') && ph !== 'room') {
-      if (mark === null) mark = b;
-      if (!line) { line = document.createElement('div'); line.id = 'fpnotesize'; line.style.cssText = 'margin-top:10px;font-size:13px;opacity:.75;letter-spacing:.08em'; note.appendChild(line); }
-      line.textContent = '屋里的东西：已下载 ' + mb(b - mark) + ' / 约 ' + mb(INDOOR) + ' MB';
-    } else if (line) { line.remove(); if (ph === 'room') { clearInterval(t); } }
+    var line = document.getElementById('fpnotesize'), T = ready ? total : INDOOR;
+    if (note.classList.contains('on') && ph !== 'room' && !(ready && left <= 0)) {   // 后台已经下完就不显示
+      if (!line) { line = document.createElement('div'); line.id = 'fpnotesize'; line.style.cssText = 'margin-top:12px;font-size:14px;letter-spacing:.1em;color:#e3c88e'; note.appendChild(line); }
+      line.textContent = '屋里的东西：已下载 ' + mb(Math.min(T, got + net() - netMark)) + ' / 约 ' + mb(T) + ' MB';   // 后台下的 + 推门后整屋页自己下的
+    } else if (line) { line.remove(); }
+    if (ph === 'room' && !line) clearInterval(t);
   }, 500);
 })();
 </script>

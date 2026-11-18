@@ -30,7 +30,7 @@ export function readBytes(value){
 }
 async function loadBuffer(file){
  if(buffers.has(file))return;if(pending.has(file))return pending.get(file);
- const job=(async()=>{const response=await fetch(new URL('./'+file,import.meta.url));if(!response.ok)throw new Error('Resource unavailable: '+file+' ('+response.status+')');const stream=response.body.pipeThrough(new DecompressionStream('gzip'));const raw=await new Response(stream).arrayBuffer();buffers.set(file,raw);})();pending.set(file,job);
+ const job=(async()=>{const href=new URL('./'+file,import.meta.url).href;let pre=null;try{pre=parent!==window&&parent.__PRE?parent.__PRE.get(href):null}catch(e){}const blob=pre?await pre:null;let body;if(blob)body=blob.stream();else{const response=await fetch(href);if(!response.ok)throw new Error('Resource unavailable: '+file+' ('+response.status+')');body=response.body}const stream=body.pipeThrough(new DecompressionStream('gzip'));const raw=await new Response(stream).arrayBuffer();buffers.set(file,raw);})();pending.set(file,job);
  try{await job;}finally{pending.delete(file);}
 }
 function visit(v,fn){if(Array.isArray(v)){for(const x of v)visit(x,fn);}else if(v&&typeof v==='object'){fn(v);for(const[k,x]of Object.entries(v))if(k!=='geometries'&&k!=='images'&&k!=='materials'&&k!=='textures'&&k!=='samplers')visit(x,fn);}}

@@ -43956,7 +43956,20 @@ class ImageLoader extends Loader {
 
 		scope.manager.itemStart( url );
 
-		image.src = url;
+		// 部署版：游戏页在后台下好的贴图直接用（scripts/build_cf_site.py）
+		let blob = null;
+		try { if ( globalThis.parent !== globalThis && globalThis.parent.__PRE ) blob = globalThis.parent.__PRE.take( new URL( url, location.href ).href ); } catch ( e ) {}
+		if ( blob ) {
+
+			const local = URL.createObjectURL( blob );
+			image.addEventListener( 'load', function () { URL.revokeObjectURL( local ); }, { once: true } );
+			image.src = local;
+
+		} else {
+
+			image.src = url;
+
+		}
 
 		return image;
 
