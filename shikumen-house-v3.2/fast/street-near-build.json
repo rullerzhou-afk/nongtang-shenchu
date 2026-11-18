@@ -1,0 +1,29 @@
+{
+  "detail": "near",
+  "rawBytes": 418655092,
+  "packedBytes": 100942165,
+  "jsonBytes": 1310321,
+  "manifestBytes": 36261,
+  "payloadBytes": 102288747,
+  "geometryCount": 5154,
+  "images": 515,
+  "roomState": {
+    "rooms": [
+      "courtyard",
+      "rear-courtyard",
+      "terrace",
+      "__street-detail__",
+      "hall"
+    ],
+    "binaryFiles": 28,
+    "binaryBytes": 144970038
+  },
+  "files": [
+    "street-near-faac7dd2622f345fe44db6d3a58f6cc5e83564fb178889918eaf22f8c3282f17.bin.gz",
+    "street-near-6a74ae9af0cc4bad7fac41661029384a67f523299799d5837b1e9fb866d00ddb.json.gz",
+    "street-near.json"
+  ],
+  "sourceSHA256": "5dee9a59565076060040db61496bc21f2aeb9feb58f8f37f2c75d2f7f005423c",
+  "viewerSHA256": "6fac1a65593556ae2f483e5956246de29e67211b625500428685dd4f6fcec2fb",
+  "codecSHA256": "bafdaf683b4221d938434717d74a5b26ecc6d96df42b03962ec1b986eb23e2d3"
+}

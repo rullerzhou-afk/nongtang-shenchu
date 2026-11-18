@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>弄堂深处 · 首页试样（固定机位试样）</title>
+<style>
+:root{--paper:#f4efe1;--paper2:#ebe3cf;--ink:#2f4a3a;--ink2:#6b6a5a;--seal:#a63a2b;--night:#14110e;--cream:#f3ead4}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--night);overflow:hidden;color:var(--ink);
+  font-family:"Songti SC","STSong","Noto Serif SC","Source Han Serif SC",serif}
+#view{position:fixed;inset:0;width:100%;height:100%;border:0;background:#e3e6df}
+/* 四周压暗一点，让画面收拢在中间 */
+#vignette{position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 125% 110% at 55% 48%,rgba(40,34,26,0) 58%,rgba(40,34,26,.16) 100%)}
+
+/* 左侧纸签：竖排标题 */
+#card{position:fixed;left:clamp(24px,4.6vw,72px);top:50%;transform:translateY(-50%);
+  width:clamp(196px,17vw,236px);padding:30px 26px 26px;
+  background:linear-gradient(178deg,#f8f3e6 0,var(--paper) 46%,var(--paper2) 100%);
+  box-shadow:0 22px 60px rgba(8,6,4,.45),0 2px 0 rgba(255,255,255,.5) inset;
+  display:flex;flex-direction:column;align-items:center;gap:24px;
+  opacity:0;transition:opacity 1.2s .3s,transform 1.2s .3s}
+#card.on{opacity:1}
+#card::before{content:"";position:absolute;inset:9px;border:1px solid rgba(47,74,58,.38);pointer-events:none}
+#card::after{content:"";position:absolute;inset:12px;border:1px solid rgba(47,74,58,.14);pointer-events:none}
+.latin{font:500 9.5px/1 "Helvetica Neue","PingFang SC",sans-serif;letter-spacing:.42em;color:var(--ink2);padding-left:.42em;white-space:nowrap}
+.rule{width:28px;height:1px;background:rgba(47,74,58,.5)}
+.titles{display:flex;flex-direction:row-reverse;align-items:flex-start;gap:18px;position:relative;padding:2px 0 6px}
+.titles h1{margin:0;writing-mode:vertical-rl;font-weight:600;font-size:clamp(50px,7.6vh,76px);line-height:1;letter-spacing:.2em;color:var(--ink)}
+.titles .sub{margin:6px 0 0;writing-mode:vertical-rl;font-size:14px;line-height:1;letter-spacing:.42em;color:var(--ink2)}
+.seal{position:absolute;left:-6px;bottom:6px;width:38px;height:38px;background:var(--seal);color:#f8ecd9;
+  display:grid;grid-template-columns:1fr 1fr;place-items:center;padding:4px;font-size:13px;line-height:1;font-weight:600;
+  border-radius:3px;transform:rotate(-3deg);box-shadow:0 0 0 1px rgba(166,58,43,.25)}
+#start{font:inherit;font-size:18px;letter-spacing:.7em;padding:.82em 0 .82em .7em;width:100%;cursor:pointer;
+  border:1px solid var(--ink);background:var(--ink);color:var(--paper);transition:background .25s,color .25s,letter-spacing .25s}
+#start:hover{background:transparent;color:var(--ink);letter-spacing:.9em;padding-left:.9em}
+#start:focus-visible{outline:2px solid var(--seal);outline-offset:3px}
+.entry-actions{display:flex;flex-direction:column;gap:10px;width:100%}
+#walk-start{font:inherit;font-size:13px;letter-spacing:.2em;padding:.45em .6em .45em .8em;
+  border:0;background:transparent;color:var(--ink);cursor:pointer;text-decoration:underline;text-underline-offset:5px}
+#walk-start:hover{color:var(--seal)}
+#walk-start:focus-visible{outline:2px solid var(--seal);outline-offset:3px}
+.entry-actions button:disabled{cursor:wait}
+#card:not(.on){pointer-events:none}
+.foot{font-size:12px;letter-spacing:.3em;color:var(--ink2);padding-left:.3em;white-space:nowrap}
+
+#hint{position:fixed;right:clamp(20px,3vw,44px);bottom:clamp(18px,3vh,34px);display:flex;gap:1.4em;align-items:center;
+  padding:.7em 1.3em .7em 1.6em;background:rgba(244,239,225,.9);border:1px solid rgba(47,74,58,.3);
+  font-size:12px;letter-spacing:.3em;color:var(--ink);pointer-events:none;opacity:0;transition:opacity 1.2s 1s}
+#hint.on{opacity:1}
+#hint i{display:inline-block;width:16px;height:1px;background:rgba(47,74,58,.45)}
+body.entry-direct #card,body.entry-direct #hint{opacity:0;transition:opacity .5s;pointer-events:none}
+
+/* 进门段：转头用的透明层、门环亮点、跳过、回街区、提示 */
+#fpui{position:fixed;inset:0;display:none;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;z-index:5}
+#fpui.on{display:block}#fpui.drag{cursor:grabbing}
+#fpdot{position:fixed;left:0;top:0;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;display:none;cursor:pointer;z-index:6;
+  background:rgba(255,217,138,.92);box-shadow:0 0 0 6px rgba(255,217,138,.28),0 0 18px 6px rgba(255,217,138,.55);animation:fppulse 1.6s infinite}
+@keyframes fppulse{50%{box-shadow:0 0 0 12px rgba(255,217,138,.12),0 0 22px 8px rgba(255,217,138,.6)}}
+.fpchip{position:fixed;z-index:7;font:inherit;font-size:12px;letter-spacing:.3em;padding:.7em 1.2em .7em 1.5em;color:var(--ink);cursor:pointer;
+  background:rgba(244,239,225,.9);border:1px solid rgba(47,74,58,.3);opacity:0;pointer-events:none;transition:opacity .6s}
+.fpchip.on{opacity:1;pointer-events:auto}
+#fpskip{right:clamp(20px,3vw,44px);bottom:clamp(18px,3vh,34px)}
+#fpback{left:clamp(20px,3vw,44px);top:clamp(18px,3vh,34px)}
+#fpup{left:clamp(20px,3vw,44px);top:calc(clamp(18px,3vh,34px) + 52px)}
+#roomzoom{position:fixed;right:clamp(20px,3vw,44px);top:clamp(18px,3vh,34px);z-index:7;display:none;gap:6px}
+#roomzoom.on{display:flex}#roomzoom button{font:inherit;font-size:12px;letter-spacing:.12em;padding:.65em 1em;color:var(--ink);background:rgba(244,239,225,.9);border:1px solid rgba(47,74,58,.3);cursor:pointer}
+#roomzoom button:disabled{opacity:.48;cursor:default}
+/* 房间门口的亮点：和大门门环那个同一种样子，点了走进对面那间 */
+.fpdoor{position:fixed;left:0;top:0;width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;display:none;cursor:pointer;z-index:6;
+  background:rgba(255,217,138,.92);box-shadow:0 0 0 6px rgba(255,217,138,.28),0 0 18px 6px rgba(255,217,138,.55);animation:fppulse 1.6s infinite}
+@media (prefers-reduced-motion:reduce){.fpdoor{animation:none}}
+#fptoast{position:fixed;left:50%;bottom:clamp(22px,5vh,48px);transform:translateX(-50%);z-index:7;white-space:nowrap;
+  font-size:14px;letter-spacing:.28em;padding:.8em 1.6em .8em 1.9em;color:var(--cream);background:rgba(20,17,14,.62);
+  opacity:0;pointer-events:none;transition:opacity .6s}
+#fptoast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){#fpdot{animation:none}}
+/* 点门环后的纸色等待页：阿婆的字条。屋里的房间在底下载入、准备画面（约二十秒）；进度条用 transform 动画，主线程忙时也在走 */
+#fpnote{position:fixed;inset:0;z-index:8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px;background:var(--paper);
+  opacity:0;pointer-events:none;transition:opacity .7s ease-in}
+#fpnote.on{opacity:1;pointer-events:auto;cursor:wait}
+#fpnote:not(.on){transition:opacity .9s ease-out}
+#fpnote .slip{position:relative;padding:34px 46px 28px 50px;background:linear-gradient(176deg,#fbf7ec 0,#f2ead6 100%);transform:rotate(-1.6deg);
+  box-shadow:0 14px 34px rgba(60,48,30,.16),0 1px 0 rgba(255,255,255,.6) inset;
+  font-family:"Kaiti SC","STKaiti","KaiTi","Songti SC",serif;color:#33362c}
+#fpnote .slip::before{content:"";position:absolute;left:50%;top:-9px;width:64px;height:20px;margin-left:-32px;background:rgba(223,211,178,.75);transform:rotate(2deg)}
+#fpnote .slip p{margin:0;font-size:clamp(24px,2.5vw,34px);line-height:1.75;letter-spacing:.14em}
+#fpnote .slip .sign{margin-top:14px;text-align:right;font-size:clamp(18px,1.7vw,22px);letter-spacing:.2em;color:#5b5a4a}
+#fpnote .bar{width:min(220px,50vw);height:1px;background:rgba(47,74,58,.18);position:relative;overflow:hidden}
+#fpnote .bar i{position:absolute;inset:0 auto 0 0;width:34%;background:rgba(47,74,58,.6);animation:slide 1.8s ease-in-out infinite}
+#fpnote .step{margin-top:-18px;font-size:12px;letter-spacing:.3em;color:var(--ink2)}
+@media (prefers-reduced-motion:reduce){#fpnote .bar i{animation:none;width:100%;opacity:.4}}
+/* 进屋后：叠化用的定格画面；右边按爬楼梯顺序的楼层 */
+#roomfade{position:fixed;inset:0;z-index:8;display:none;align-items:center;justify-content:center;background:var(--paper);color:var(--ink);opacity:0;pointer-events:none;letter-spacing:.25em}
+#roomfade.on{display:flex}
+#fpsnap{position:fixed;inset:0;width:100%;height:100%;z-index:4;pointer-events:none;display:none;opacity:0}
+#fpsnap.on{display:block}
+#levels{position:fixed;right:clamp(18px,2.6vw,40px);top:50%;transform:translateY(-50%);z-index:7;display:flex;flex-direction:column;gap:2px;
+  opacity:0;pointer-events:none;transition:opacity .8s}
+#levels.on{opacity:1;pointer-events:auto}
+#levels::before{content:"";position:absolute;right:11px;top:18px;bottom:18px;width:1px;background:rgba(47,74,58,.35)}
+#levels button{position:relative;display:flex;flex-direction:row-reverse;align-items:center;gap:12px;font:inherit;font-size:13px;letter-spacing:.24em;color:var(--ink2);
+  background:none;border:0;padding:9px 0;cursor:pointer;text-align:right}
+#levels button i{display:block;width:9px;height:9px;margin-right:7px;border-radius:50%;background:var(--paper);border:1px solid rgba(47,74,58,.55);transition:all .3s}
+#levels button span{padding:.35em .2em .35em .55em;background:rgba(244,239,225,.86)}
+#levels button:hover{color:var(--ink)}
+#levels button.cur{color:var(--ink)}
+#levels button.cur i{width:15px;height:15px;margin-right:4px;background:var(--ink);border-color:var(--ink)}
+#levels button:focus-visible{outline:2px solid var(--seal);outline-offset:3px}
+/* 默认入口推近到门头后盖上的纸色：拍远景板和全景的停顿藏在下面 */
+#fpveil{position:fixed;inset:0;z-index:8;display:grid;place-items:center;background:var(--paper);opacity:0;pointer-events:none;transition:opacity .6s ease-in}
+#fpveil.on{opacity:1;pointer-events:auto;cursor:wait}
+#fpveil:not(.on){transition:opacity .8s ease-out}
+#fpveil span{font-size:clamp(18px,2.2vw,26px);letter-spacing:.6em;padding-left:.6em;color:var(--ink)}
+
+#fade{position:fixed;inset:0;background:var(--night);opacity:0;pointer-events:none;transition:opacity .9s;z-index:30}
+#caption{position:fixed;left:0;right:0;top:44%;text-align:center;color:var(--cream);font-size:clamp(20px,2.6vw,30px);letter-spacing:.6em;padding-left:.6em;
+  opacity:0;transition:opacity .9s;pointer-events:none;z-index:31}
+#caption small{display:block;margin-top:1.4em;font-size:13px;letter-spacing:.3em;color:#a89c82}
+
+#loading{position:fixed;inset:0;z-index:50;background:var(--night);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+  color:var(--cream);transition:opacity 1.1s,background-color 1.6s}
+/* 街区已经出来、瓦片还在铺：加载页变成半透明毛玻璃，让画面先隐约露出来 */
+#loading.veil{background:rgba(20,17,14,.58);-webkit-backdrop-filter:blur(14px) saturate(.9);backdrop-filter:blur(14px) saturate(.9)}
+#loading.veil h1,#loading.veil .sub,#loading.veil .step{text-shadow:0 2px 18px rgba(0,0,0,.55)}
+#loading h1{margin:0;font-size:clamp(34px,5vw,56px);letter-spacing:.34em;padding-left:.34em;font-weight:600}
+#loading .sub{font-size:14px;letter-spacing:.42em;padding-left:.42em;color:#b9ad92}
+#loading .bar{width:min(280px,56vw);height:1px;background:#3b352b;position:relative;overflow:hidden;margin-top:6px}
+#loading .bar i{position:absolute;inset:0 auto 0 0;width:36%;background:#e3c88e;animation:slide 1.8s ease-in-out infinite}
+@keyframes slide{0%{transform:translateX(-110%)}100%{transform:translateX(290%)}}
+#loading .step{font-size:13px;letter-spacing:.16em;color:#cfc3a6;min-height:1.4em;text-align:center;padding:0 20px}
+#loading .sec{font:11px/1 "Helvetica Neue",sans-serif;letter-spacing:.14em;color:#857c67}
+@media (prefers-reduced-motion:reduce){#loading .bar i{animation:none;width:100%;opacity:.5}}
+
+/* 固定机位试样：进门加载页改成 B 电影字幕的样子（深色底、白字、金线），不再提前露出阿婆的字条 */
+#fpnote{background:var(--night)!important;gap:30px}
+#fpnote .slip{padding:0;background:none;transform:none;box-shadow:none;color:#f6f0e2;text-align:center}
+#fpnote .slip::before{display:none}
+#fpnote .slip p{font-size:clamp(34px,3.6vw,52px);letter-spacing:.3em;padding-left:.3em}
+#fpnote .slip .sign{margin-top:18px;text-align:center;font-family:"Songti SC","Noto Serif SC",serif;font-size:13px;letter-spacing:.4em;color:#c9c1ae}
+#fpnote .bar{background:rgba(230,194,122,.22)}
+#fpnote .bar i{background:#e6c27a}
+#fpnote .step{color:#9d9686;letter-spacing:.4em}
+</style>
+</head>
+<body>
+<iframe id="view" src="/shikumen-house-v3.2/fast/index.html?view=block&light=day&street=near" title="石库门街区"></iframe>
+<div id="vignette"></div>
+
+<aside id="card" aria-label="弄堂深处">
+  <div class="latin">SHIKUMEN · SHANGHAI</div>
+  <div class="rule"></div>
+  <div class="titles">
+    <h1>弄堂深处</h1>
+    <p class="sub">一九九四年　上海　回阿婆家</p>
+    <div class="seal" aria-hidden="true"><span>一</span><span>九</span><span>九</span><span>四</span></div>
+  </div>
+  <div class="entry-actions">
+    <button id="start">开始</button>
+    <button id="walk-start">走进弄堂</button>
+  </div>
+  <div class="foot">推门进去看看</div>
+</aside>
+
+<div id="hint"><span>拖动 · 转看</span><i></i><span>双指滑动或右键 · 平移</span><i></i><span>捏合或滚轮 · 远近</span></div>
+<div id="fpui"></div><div id="fpdot" role="button" aria-label="门环"></div>
+<button id="fpskip" class="fpchip">跳过</button><button id="fpback" class="fpchip">回到街区</button><button id="fpup" class="fpchip">全屋</button><div id="fptoast"></div>
+<div id="roomzoom" role="group" aria-label="房间远近"><button id="roomwider" aria-label="放宽视野">− 远一点</button><button id="roomcloser" aria-label="靠近观察">＋ 近一点</button></div>
+<div id="roomfade" aria-live="polite"></div>
+<img id="fpsnap" alt="" aria-hidden="true">
+<div id="fpnote" role="status" aria-live="polite"><div class="slip"><p>回阿婆家</p><p class="sign">成都北路 27 号　·　一九九四年</p></div>
+  <div class="bar"><i></i></div><div class="step" id="fpnotestep">进门</div></div>
+<nav id="levels" aria-label="楼层"><button data-level="3"><i></i><span>阁楼</span></button><button data-level="2"><i></i><span>二层（含晒台）</span></button><button data-level="1"><i></i><span>亭子间</span></button><button data-level="0"><i></i><span>一层</span></button></nav>
+<div id="fpveil" aria-hidden="true"><span>成都北路 27 号</span></div>
+<div id="fade"></div>
+<div id="caption">一九九四年 · 上海<small>进门这一段还没接上</small></div>
+<div id="loading"><h1>弄堂深处</h1><div class="sub">一九九四年 · 上海</div><div class="bar"><i></i></div>
+  <div class="step" id="lstep">正在搬砖瓦…</div><div class="sec" id="lsec"></div><div class="sec" id="lsize" style="color:#e3c88e"></div><div class="sec" id="lnote" style="max-width:min(520px,88vw);text-align:center;line-height:1.7;letter-spacing:.04em">第一次打开要下载约 690MB（弄堂约 330MB，推门进屋再下约 360MB），网速慢时会久一些；下载过的内容会留在浏览器里，第二次打开快很多。<br>也可以先看 <a href="report/" target="_blank" rel="noopener" style="color:#e3c88e">项目报告书</a>；想在自己电脑上运行，见 <a href="https://github.com/rullerzhou-afk/nongtang-shenchu" target="_blank" rel="noopener" style="color:#e3c88e">GitHub</a></div><div class="sec" id="lcopy" style="position:absolute;bottom:22px;left:0;right:0;text-align:center;font-size:11px;letter-spacing:.06em;opacity:.55">© 2026 <a href="https://github.com/rullerzhou-afk" target="_blank" rel="noopener" style="color:inherit">rullerzhou-afk</a> 保留所有权利</div></div>
+<script type="module" src="./home.js?v=hall-stair-cue-20261118"></script>
+<script type="module" src="./bgm.js?v=title-autoplay-20261118"></script>
+<script type="module" src="./sfx.js?v=20261118b"></script>
+<script>/* 部署版：真实下载进度（scripts/build_cf_site.py） */
+(function () {
+  var HOME = 330 * 1048576, INDOOR = 360 * 1048576, own = 0, mark = null;
+  try { new PerformanceObserver(function (l) { l.getEntries().forEach(function (e) { own += (e.encodedBodySize || e.transferSize || 0); }); }).observe({ type: 'resource', buffered: true }); } catch (e) {}
+  function bytes() { var b = own; try { var w = document.getElementById('view').contentWindow; b += (w.__dlBytes || 0) + (w.__dlLive || 0); } catch (e) {} return b; }
+  function mb(b) { return Math.round(b / 1048576); }
+  var bar = document.querySelector('#loading .bar i'), size = document.getElementById('lsize');
+  var t = setInterval(function () {
+    var b = bytes(), L = document.getElementById('loading');
+    if (L) {
+      var r = Math.min(0.99, b / HOME);
+      if (bar) { bar.style.animation = 'none'; bar.style.width = (r * 100).toFixed(1) + '%'; }
+      if (size) size.textContent = '已下载 ' + mb(b) + ' / 约 ' + mb(HOME) + ' MB';
+      return;
+    }
+    var note = document.getElementById('fpnote'), ph = window.__HOME && __HOME.entry && __HOME.entry.stats && __HOME.entry.stats.indoor && __HOME.entry.stats.indoor.phase;
+    if (!note) return;
+    var line = document.getElementById('fpnotesize');
+    if (note.classList.contains('on') && ph !== 'room') {
+      if (mark === null) mark = b;
+      if (!line) { line = document.createElement('div'); line.id = 'fpnotesize'; line.style.cssText = 'margin-top:10px;font-size:13px;opacity:.75;letter-spacing:.08em'; note.appendChild(line); }
+      line.textContent = '屋里的东西：已下载 ' + mb(b - mark) + ' / 约 ' + mb(INDOOR) + ' MB';
+    } else if (line) { line.remove(); if (ph === 'room') { clearInterval(t); } }
+  }, 500);
+})();
+</script>
+</body>
+</html>

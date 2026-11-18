@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+<script>/* 部署版：统计这一页已下载的字节数，给游戏加载页显示进度（scripts/build_cf_site.py） */(function(){try{performance.setResourceTimingBufferSize(20000)}catch(e){}window.__dlBytes=0;try{new PerformanceObserver(function(l){l.getEntries().forEach(function(e){if(!/\.part\d+$/.test(e.name))window.__dlBytes+=(e.encodedBodySize||e.transferSize||0)})}).observe({type:"resource",buffered:true})}catch(e){}})();</script><link rel="icon" href="data:,"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>弄堂深处 · 石库门 V3.2</title>
+<meta name="description" content="三排十户石库门：实体砖瓦木窗，前后天井，逐户查看房间、楼梯、阁层与老虎窗。离线三维查看器。">
+<style>
+:root{--ink:#343e37;--muted:#8b8b7b;--paper:#f4f0e7;--line:#d9d4c6;--accent:#6e7e68;--gold:#9c805a}*{box-sizing:border-box}body{margin:0;background:#e7e0d3;color:var(--ink);font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;overflow:hidden}button,a,input,select{font:inherit}button,a{touch-action:manipulation}button{cursor:pointer;color:inherit}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:3px}#app{display:grid;grid-template-columns:minmax(0,1fr) 290px;height:100vh;height:100dvh}#stage{position:relative;min-width:0;overflow:hidden}#canvas{position:absolute;inset:0}canvas{display:block;width:100%;height:100%;touch-action:none}header{position:absolute;top:28px;left:32px;z-index:2;pointer-events:none}.eyebrow{font-size:9px;letter-spacing:2.5px;color:#7c826f;font-weight:650}.eyebrow:before{content:"";display:inline-block;width:25px;height:1px;background:#849079;vertical-align:middle;margin-right:12px}h1{font:normal 42px/1.2 "Songti SC","Noto Serif SC",SimSun,serif;letter-spacing:5px;margin:12px 0 10px}.sub{font-size:11px;letter-spacing:1px;color:#84826f}.tag{position:absolute;right:24px;top:29px;background:#f4f0e5d9;border:1px solid #c7c3b1;color:#7b826e;border-radius:20px;padding:7px 11px;font-size:10px;z-index:2;pointer-events:none}.bottom{position:absolute;left:32px;right:25px;bottom:25px;display:flex;justify-content:space-between;align-items:end;pointer-events:none;font-size:10px;line-height:1.9;color:#767f6a;z-index:2}.north{width:36px;text-align:center;font:12px Georgia,serif}.north b{display:block;font-size:25px;font-weight:400}.scale{height:6px;width:55px;border:1px solid #89927d;border-top:0;display:inline-block;margin-right:7px;vertical-align:middle}aside{z-index:5;background:#f5f1e9ed;border-left:1px solid #d2ccbc;display:flex;flex-direction:column;overflow:hidden}.side-head{padding:28px 22px 21px;border-bottom:1px solid var(--line)}.side-head strong{font:21px "Songti SC",SimSun,serif;letter-spacing:2px}.side-head small{display:block;font-size:10px;letter-spacing:.8px;color:var(--muted);margin-top:10px;line-height:1.8}.scroll{padding:0 22px;overflow:auto;scrollbar-width:thin;flex:1}.section{padding:19px 0;border-bottom:1px solid var(--line)}.section h2{font-size:11px;letter-spacing:.8px;font-weight:550;margin:0 0 12px}.views{display:grid;grid-template-columns:1fr 1fr;gap:6px}.views button,.floors button,.lights button{background:transparent;border:1px solid #d9d3c5;border-radius:3px;padding:9px 5px;font-size:10px;transition:background .15s}.views button:hover,.floors button:hover,.lights button:hover{background:#e7e4d7}.views button.active,.lights button.active{background:#dce3d6;border-color:#9ca98e;color:#4d634a}.floors,.lights{display:flex;gap:5px}.lamp-presets{margin-top:8px}.lamp-chips{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:6px}.lamp-chips button{background:transparent;border:1px solid #d9d3c5;border-radius:3px;padding:7px 3px;font-size:10px}.lamp-chips button.on{background:#f3e6c4;border-color:#c8a75c;color:#6b4f1d}.lamp-note{display:block;margin-top:6px;font-size:10px;color:#8a8a7c}.floors{flex-wrap:wrap}.floors button{flex:1 1 28%}.floors button,.lights button{flex:1}.floors button.active{background:#fffdf6;border-color:#a4aa97}.row{display:flex;justify-content:space-between;align-items:center;min-height:38px;font-size:11px;cursor:pointer}.row[hidden]{display:none}.row small{display:block;color:#939581;font-size:9px;margin-top:4px}.row input{appearance:none;position:relative;width:30px;height:17px;border:1px solid #c6cbb9;border-radius:12px;background:#d8d9cd;cursor:pointer;flex:none}.row input:before{content:"";position:absolute;left:2px;top:2px;width:11px;height:11px;background:#fffdf5;border-radius:50%;transition:transform .15s}.row input:checked{background:#7d9073;border-color:#7d9073}.row input:checked:before{transform:translateX(12px)}.dims{display:grid;grid-template-columns:1fr 1fr;gap:18px 7px}.dims small{font-size:9px;color:#8b8d7b;display:block;margin-bottom:6px}.dims b{font:20px Georgia,serif;color:#69755c}.dims span{font-size:9px;color:#939582;margin-left:3px}.note{font-size:10px;line-height:1.8;color:#8a8c7b;margin:12px 0 0}.side-foot{padding:18px 22px;border-top:1px solid var(--line);background:#efeee2}.download{display:block;width:100%;background:#58684f;border:1px solid #58684f;color:#f7f4e9;text-align:center;padding:12px 8px;font-size:11px;text-decoration:none;border-radius:3px}.download:hover{background:#6d7b60}.secondary{display:flex;justify-content:space-between;gap:10px;margin-top:13px}.secondary a{font-size:9px;color:#81866f;text-decoration:none}.secondary a:hover{text-decoration:underline}#labels{position:absolute;inset:0;pointer-events:none;z-index:3}.room{display:none;position:absolute;transform:translate(-50%,-100%);padding:5px 8px;border:1px solid #a9b39a;border-radius:3px;background:#faf8eee8;font-size:9px;white-space:nowrap;box-shadow:0 2px 8px #48503c10;color:#586c4b}.room:after{content:"";position:absolute;left:50%;bottom:-8px;height:7px;border-left:1px solid #849178}#boot{position:absolute;inset:0;z-index:10;display:grid;place-content:center;background:#efeadf;text-align:center}.spinner{width:34px;height:34px;border:1px solid #c5cbb8;border-top-color:#65785a;border-radius:50%;animation:spin 1.5s linear infinite;margin:0 auto 20px}#boot h2{font:22px "Songti SC",SimSun,serif;letter-spacing:3px;font-weight:400;margin:0 0 15px}#boot p{font-size:11px;line-height:1.8;color:#889078;max-width:330px;margin:auto}#boot[hidden]{display:none}#mobile{display:none;position:absolute;right:16px;top:18px;z-index:7;padding:9px 13px;border:1px solid #bcc4ae;border-radius:4px;background:#f7f3e9;font-size:11px}.status{position:absolute;top:70px;right:24px;max-width:230px;color:#859076;font-size:10px;line-height:1.7;pointer-events:none;z-index:2}.house-select{display:block;width:100%;min-width:0;padding:10px 9px;border:1px solid #bac3ad;border-radius:3px;background:#fcfaf3;color:var(--ink);font-size:11px;cursor:pointer}.house-select[aria-busy="true"]{background:#e7ebdf}.house-note{min-height:18px;margin-top:9px}.note.error{color:#995f49}.views button.wide{grid-column:1/-1}.floors button{padding-left:3px;padding-right:3px;white-space:nowrap}.tag{max-width:calc(100% - 55px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@keyframes spin{to{transform:rotate(360deg)}}@media(max-width:760px){#app{display:block}aside{position:absolute;inset:0 0 0 auto;width:280px;transform:translateX(100%);transition:transform .2s}aside.open{transform:none}#stage{height:100%}header{top:22px;left:22px}h1{font-size:33px}#mobile{display:block}.tag,.status{top:125px;right:18px;font-size:9px}.status{top:160px}.bottom{left:22px;font-size:9px}.side-head{padding-top:65px}}@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+.view-search{display:block;width:100%;box-sizing:border-box;padding:8px 9px;border:1px solid #cfc9b8;border-radius:3px;background:#fcfaf3;font-size:11px;margin:0 0 8px}.view-group{border-top:1px solid var(--line);padding:9px 0}.view-group>summary{cursor:pointer;font-size:11px;font-weight:550;letter-spacing:.6px;list-style:none;display:flex;justify-content:space-between;align-items:center}.view-group>summary::-webkit-details-marker{display:none}.view-group>summary::after{content:"+";color:#8a8c7b;font-weight:400}.view-group[open]>summary::after{content:"−"}.view-group>.views{margin-top:9px}.view-room{margin-top:9px}.view-room[hidden],.view-group[hidden]{display:none}.view-room h3{font-size:10px;font-weight:500;color:#6f7563;margin:0 0 5px;letter-spacing:.5px}.view-room .views{grid-template-columns:1fr 1fr 1fr;gap:5px}.view-room .views button{padding:7px 3px}.toggles{display:grid;grid-template-columns:1fr 1fr;column-gap:14px}.toggles .row{min-height:32px}</style></head><body><div id="app"><main id="stage"><div id="canvas"></div><header><div class="eyebrow">SHIKUMEN / STRUCTURE REBUILT</div><h1>弄堂深处</h1><div class="sub" id="scene-subtitle">十户住宅 · 三排里弄 · 实体砖瓦木窗</div></header><div class="tag" id="view-name">B1 · 这户与弄堂</div><div class="status" id="status"></div><button id="mobile" aria-label="展开控制面板">查看方式</button><div id="labels"></div><div class="bottom"><div>拖动旋转 · 滚轮缩放 · 右键平移<br><span class="scale" id="scale"></span><span>2 米</span></div><div class="north"><span id="compass"><b>↑</b>N</span></div></div><div id="boot"><div class="spinner"></div><h2>正在搭起弄堂</h2><p id="progress">先打开街坊，进入房间时载入陈设。</p></div></main><aside id="panel"><div class="side-head"><strong>十户 · 三排里弄</strong><small>V3.2 · 10 处老虎窗 · 4 / 3 / 3<br>逐户查看房间、阁层与上下通路</small></div><div class="scroll"><section class="section"><h2><label for="house-select">选择一户</label></h2><select id="house-select" class="house-select" aria-busy="false"><optgroup label="第一排 · 4 户"><option value="A1">A1 · 21号</option><option value="A2">A2 · 23号</option><option value="A3">A3 · 25号</option><option value="B1" selected>B1 · 27号（主户）</option></optgroup><optgroup label="第二排 · 3 户"><option value="A4">A4 · 31号</option><option value="A5">A5 · 33号</option><option value="A6">A6 · 35号</option></optgroup><optgroup label="第三排 · 3 户"><option value="A7">A7 · 41号</option><option value="A8">A8 · 43号</option><option value="B2">B2 · 45号</option></optgroup></select><p class="note house-note" id="house-note" aria-live="polite">第一排 · 27号 · 双开间单厢</p></section><section class="section"><h2>光线</h2><label class="row" id="stair-lights-row" hidden><span>楼梯间照明</span><input id="stair-lights" type="checkbox" checked></label><div class="lights"><button data-light="day">日光</button><button data-light="dusk" class="active">暮色</button><button data-light="night" id="stair-night" hidden>夜间</button></div><div id="lamp-row" hidden><div class="lights lamp-presets"><button data-lamp-preset="evening">晚上八点</button><button data-lamp-preset="all">全部开灯</button><button data-lamp-preset="off">全关</button></div><div class="lamp-chips" id="lamp-chips"></div><small class="lamp-note">逐间开关。房间近景里最近三盏投影，整屋视角不投影以保持流畅。</small></div></section><section class="section"><h2>楼层</h2><div class="floors"><button data-floor="all" class="active">整栋</button><button data-floor="ground">一层</button><button data-floor="mezzanine">亭子半层</button><button data-floor="second">到二层</button><button data-floor="attic">阁层</button></div><p class="note" id="floor-note">主屋两层，后附屋错层；每户都有局部阁层和一处老虎窗。</p></section><section class="section"><h2>显示与开合</h2><div class="toggles"><label class="row"><span>移开屋顶</span><input id="roof" type="checkbox"></label><label class="row"><span>剖开墙体</span><input id="cut" type="checkbox"></label><label class="row"><span>打开门扇</span><input id="doors" type="checkbox"></label><label class="row"><span>打开窗扇</span><input id="windows" type="checkbox"></label><label class="row" id="cabinet-row" title="柜门、抽屉与箱盖"><span>柜门抽屉</span><input id="cabinet" type="checkbox"></label><label class="row"><span>房间标注</span><input id="label-switch" type="checkbox"></label><label class="row" id="rice-lid-row"><span>提起米缸盖</span><input id="rice-lid" type="checkbox"></label><label class="row" id="bathing-lid-row"><span>痰盂盖</span><input id="bathing-lid" type="checkbox"></label><label class="row" id="bathing-bail-row"><span>痰盂提梁</span><input id="bathing-bail" type="checkbox"></label><label class="row" title="三组住宅 · 沿街店面 · 总弄与支弄"><span>显示邻里</span><input id="context" type="checkbox" checked></label><label class="row" title="检查体量、天井与屋面关系"><span>素模观察</span><input id="clay" type="checkbox"></label></div></section><section class="section"><h2>观察位置</h2><input id="view-search" class="view-search" type="search" placeholder="搜索视角：台灯、痰盂、窗…" aria-label="搜索视角"><details class="view-group" open><summary>总览</summary><div class="views"><button data-view="exterior" data-search="总览 这户与弄堂 这户与弄堂" class="active">这户与弄堂</button><button data-view="block" data-search="总览 整个街坊 整个街坊">整个街坊</button><button data-view="hero" data-search="总览 单独此户 单独此户">单独此户</button><button data-view="ground" data-search="总览 打开一层 打开一层">打开一层</button><button data-view="second" data-search="总览 查看二层 查看二层">查看二层</button><button data-view="attic" data-search="总览 阁层与屋窗 阁层与屋窗">阁层与屋窗</button><button data-view="section" data-search="总览 错层剖面 错层剖面">错层剖面</button><button data-view="roof" data-search="总览 瓦屋顶 瓦屋顶近看">瓦屋顶</button></div></details><details class="view-group"><summary>外立面与门窗</summary><div class="views"><button data-view="gate" data-search="外立面与门窗 石库门门头 石库门门头">石库门门头</button><button data-view="frontage" data-search="外立面与门窗 临街立面 临街立面">临街立面</button><button data-view="gable" data-search="外立面与门窗 侧墙与山墙 侧墙与山墙">侧墙与山墙</button><button data-view="rear" data-search="外立面与门窗 房屋背面 房屋背面">房屋背面</button><button data-view="doors" data-search="外立面与门窗 双门安装 双门安装效果">双门安装</button><button data-view="hardware" data-search="外立面与门窗 铜门环 铜门环近看">铜门环</button><button data-view="gatebolts" data-search="大门 内侧 插销">内侧插销</button><button data-view="gatebar" data-search="大门 横闩">大门横闩</button><button data-view="gatetopbolt" data-search="大门 上插销">上插销</button><button data-view="gatebottombolt" data-search="大门 下插销">下插销</button><button data-view="threshold" data-search="外立面与门窗 门槛石材 门槛石材">门槛石材</button><button data-view="relief" data-search="外立面与门窗 三角浮雕 三角浮雕近看">三角浮雕</button><button data-view="windows" data-search="外立面与门窗 木窗与风钩 木窗与风钩">木窗与风钩</button><button data-view="dormerwindow" data-search="外立面与门窗 老虎窗 老虎窗近看">老虎窗</button></div></details><details class="view-group"><summary>一楼</summary><div class="view-room"><h3>前天井</h3><div class="views"><button data-view="courtyard" data-search="前天井 近看 前天井近看">近看</button><button data-view="courtyardreverse" data-search="前天井 朝入户门 天井朝入户门">朝入户门</button><button data-view="courtyardhouse" data-search="前天井 在整屋 天井与客堂整屋">在整屋</button></div></div><div class="view-room"><h3>客堂</h3><div class="views"><button data-view="hall" data-search="客堂 近看 客堂近看">近看</button><button data-view="hallreverse" data-search="客堂 反向 客堂反向">反向</button><button data-view="hallhouse" data-search="客堂 在整屋 客堂在整屋">在整屋</button><button data-view="hallcabinet" data-search="客堂 电视矮柜 电视矮柜">电视矮柜</button><button data-view="halltea" data-search="客堂 茶叶罐 玻璃橱 茶">茶叶罐</button><button data-view="hallpower" data-search="客堂 电视接电 电线 连接">电视接电</button><button data-view="hallphone" data-search="客堂 拨盘电话 拨盘电话">拨盘电话</button><button data-view="hallcoat" data-search="客堂 挂钩木盒 衣帽钩 外套 草帽">挂钩木盒</button></div></div><div class="view-room"><h3>前厢老人房</h3><div class="views"><button data-view="frontwing" data-search="前厢老人房 近看 前厢老人房">近看</button><button data-view="doorbolt" data-search="老人房 房门 门内侧">门内侧</button><button data-view="frontwingreverse" data-search="前厢老人房 反向 前厢反向">反向</button><button data-view="frontwinghouse" data-search="前厢老人房 在整屋 前厢在整屋">在整屋</button><button data-view="frontclock" data-search="前厢老人房 台钟 老人房台钟">台钟</button><button data-view="frontpot" data-search="前厢老人房 矮柜旁痰盂 老人房矮柜旁痰盂 床侧痰盂">矮柜旁痰盂</button></div></div><div class="view-room"><h3>中厢</h3><div class="views"><button data-view="middlewing" data-search="中厢 近看 中厢读书缝纫">近看</button><button data-view="middlewingreverse" data-search="中厢 反向 中厢反向">反向</button><button data-view="middlewinghouse" data-search="中厢 在整屋 中厢在整屋">在整屋</button><button data-view="middlecup" data-search="中厢 书桌水杯 书桌水杯">书桌水杯</button><button data-view="middlecard" data-search="中厢 工作证 书桌工作证">工作证</button><button data-view="middlepower" data-search="中厢台灯插接 电线 连接">中厢台灯插接</button></div></div><div class="view-room"><h3>后厢</h3><div class="views"><button data-view="rearwing" data-search="后厢 近看 后厢杂物间">近看</button><button data-view="rearwingreverse" data-search="后厢 反向 后厢反向">反向</button><button data-view="rearwinghouse" data-search="后厢 在整屋 后厢在整屋">在整屋</button><button data-view="bathstorage" data-search="后厢 澡盆脸盆 后厢澡盆与脸盆">澡盆脸盆</button></div></div><div class="view-room"><h3>厨房</h3><div class="views"><button data-view="kitchen" data-search="厨房 近看 厨房近看">近看</button><button data-view="kitchenkeys" data-search="厨房 窗台 钥匙 钥匙串">窗台钥匙</button><button data-view="kitchensink" data-search="厨房 水斗旧窗 水斗与旧窗">水斗旧窗</button><button data-view="kitchengas" data-search="厨房 煤气灶接管 电线 连接">煤气灶接管</button><button data-view="kitchensnack" data-search="厨房 开小灶 小台子 馄饨 竹凳">开小灶</button><button data-view="kitchensnacktop" data-search="厨房 开小灶 台面 馄饨 搪瓷碗 筷子">小灶台面</button><button data-view="kitchencondiments" data-search="厨房 调味 油盐糖酱醋">油盐糖酱醋</button><button data-view="kitchentoothpaste" data-search="厨房 水斗 牙膏 中华 搪瓷杯 牙刷 洗漱">水斗边洗漱</button><button data-view="rearlockinner" data-search="厨房 后门 方盒锁 内侧">后门锁盒</button><button data-view="rearlockouter" data-search="厨房 后门 外侧 黄铜 锁芯">后门锁芯</button><button data-view="rearlockdoor" data-search="厨房 后门 开合">后门开合</button><button data-view="kitchendoor" data-search="厨房 前木门 厨房前木门">前木门</button><button data-view="kitchenhouse" data-search="厨房 在整屋 厨房在整屋">在整屋</button></div></div><div class="view-room"><h3>后天井</h3><div class="views"><button data-view="rearreverse" data-search="后天井 器具 后天井器具">器具</button><button data-view="rearwell" data-search="后天井 朝厨房 后天井朝厨房">朝厨房</button><button data-view="rearhouse" data-search="后天井 在整屋 后天井在整屋">在整屋</button></div></div><div class="view-room"><h3>楼梯间</h3><div class="views"><button data-view="stairwell" data-search="楼梯间 近看 楼梯间">近看</button><button data-view="stairwellreverse" data-search="楼梯间 反向 楼梯间反向">反向</button><button data-view="stairstorage" data-search="楼梯间 梯下杂物 梯下箱子与报纸">梯下杂物</button><button data-view="stairlamps" data-search="楼梯间 二楼灯位 二楼楼梯灯位">二楼灯位</button></div></div></details><details class="view-group"><summary>亭子间</summary><div class="view-room"><h3>亭子间</h3><div class="views"><button data-view="mezzanine" data-search="亭子间 近看 亭子间近看">近看</button><button data-view="tingzireverse" data-search="亭子间 反向 亭子间反向">反向</button><button data-view="tingzipot" data-search="亭子间 床侧痰盂 亭子间床侧痰盂">床侧痰盂</button><button data-view="tingzipower" data-search="亭子间台扇插接 电线 连接">亭子间台扇插接</button><button data-view="tingzibridge" data-search="亭子间 木桥 亭子间木桥近看">木桥</button></div></div></details><details class="view-group"><summary>二楼</summary><div class="view-room"><h3>起居间</h3><div class="views"><button data-view="lounge" data-search="起居间 近看 楼上起居间近看">近看</button><button data-view="loungereverse" data-search="起居间 反向 起居间反向">反向</button><button data-view="loungehouse" data-search="起居间 在整屋 起居间在整屋">在整屋</button><button data-view="loungeflowers" data-search="起居间 茶几花瓶 茶几花瓶">茶几花瓶</button><button data-view="loungedoor" data-search="起居间 婚房门帘 门帘 帘子">婚房门帘</button></div></div><div class="view-room"><h3>婚房</h3><div class="views"><button data-view="marital" data-search="婚房 近看 夫妻婚房近看">近看</button><button data-view="maritalreverse" data-search="婚房 反向 婚房反向">反向</button><button data-view="maritalhouse" data-search="婚房 在整屋 婚房在整屋">在整屋</button><button data-view="maritalvanity" data-search="婚房 梳妆台 梳妆台日用品">梳妆台</button><button data-view="maritaltv" data-search="婚房 小电视 组合柜 电视机">小电视</button><button data-view="maritalpower" data-search="婚房 床头台灯插接 电线 连接">床头台灯插接</button><button data-view="maritalpot" data-search="婚房 床侧痰盂 婚房床侧痰盂">床侧痰盂</button></div></div><div class="view-room"><h3>孩子房</h3><div class="views"><button data-view="childroom" data-search="孩子房 近看 孩子卧房近看">近看</button><button data-view="childreverse" data-search="孩子房 反向 孩子卧房反向">反向</button><button data-view="childhouse" data-search="孩子房 在整屋 孩子卧房在整屋">在整屋</button><button data-view="childdesk" data-search="孩子房 书桌台灯 书桌与台灯">书桌台灯</button><button data-view="childlamp" data-search="孩子房 台灯近看 老式台灯近看">台灯近看</button><button data-view="childcord" data-search="孩子房 台灯电线 台灯电线">台灯电线</button><button data-view="childbooks" data-search="孩子房 课本 课本封面">课本</button><button data-view="childchest" data-search="孩子房 五斗橱 窗下五斗橱">五斗橱</button><button data-view="childsheet" data-search="孩子房 床单 印花床单">床单</button><button data-view="childbag" data-search="孩子房 书包 书包挂接">书包</button><button data-view="childwindow" data-search="孩子房 窗台风钩 窗台风钩">窗台风钩</button><button data-view="childpot" data-search="孩子房 床脚痰盂 孩子房床脚痰盂">床脚痰盂</button></div></div><div class="view-room"><h3>阁梯间</h3><div class="views"><button data-view="atticroom" data-search="阁梯间 整理角 熨斗 近看">近看</button><button data-view="atticroomreverse" data-search="阁梯间 反向 木梯">反向</button><button data-view="atticroomtable" data-search="阁梯间 整理桌 熨斗 插头">整理桌</button><button data-view="atticroomlamp" data-search="阁梯间 灯泡 壁灯 照明">灯泡近看</button><button data-view="atticroomlanding" data-search="阁梯间 梯口 扶手 栏杆">梯口扶手</button><button data-view="atticroomhouse" data-search="阁梯间 在整屋 二楼">在整屋</button></div></div><div class="view-room"><h3>储藏间</h3><div class="views"><button data-view="storage" data-search="储藏间 近看 储藏间近看">近看</button><button data-view="storagereverse" data-search="储藏间 反向 储藏间反向">反向</button><button data-view="storagehouse" data-search="储藏间 在整屋 储藏间在整屋">在整屋</button><button data-view="storagechest" data-search="储藏间 衣箱 衣箱近看">衣箱</button><button data-view="storagelamp" data-search="储藏间 老灯泡 老灯泡近看">老灯泡</button></div></div><div class="view-room"><h3>晒台</h3><div class="views"><button data-view="terrace" data-search="晒台 近看 二楼晒台近看">近看</button><button data-view="terracereverse" data-search="晒台 反向 晒台反向">反向</button><button data-view="terracehardware" data-search="晒台 挂件托座 晒台挂件与托座">挂件托座</button><button data-view="terracebridge" data-search="晒台 木桥 晒台木桥近看">木桥</button></div></div></details><details class="view-group"><summary>阁楼 · 储物</summary><div class="views"><button data-view="loft" data-search="阁楼 储物 箱包与旧物">箱包与旧物</button><button data-view="loftreverse" data-search="阁楼 储物 反向看梯口">反向看梯口</button><button data-view="loftwest" data-search="阁楼 储物 西侧箱包">西侧箱包</button><button data-view="lofteast" data-search="阁楼 储物 卷席与竹篮">卷席与竹篮</button><button data-view="loftbooks" data-search="阁楼 储物 旧书与报纸">旧书与报纸</button><button data-view="loftwindow" data-search="阁楼 储物 老虎窗风钩">老虎窗风钩</button><button data-view="loftlamp" data-search="阁楼 储物 壁灯与梯口">壁灯与梯口</button></div></details><p class="note" id="view-search-note" hidden>没有找到匹配的视角。</p></section><section class="section"><h2 id="dimensions-title">B1 · 本户尺度</h2><div class="dims"><div><small>外包宽度</small><b id="dim-width">7.20</b><span>m</span></div><div><small>总进深</small><b id="dim-depth">15.00</b><span>m</span></div><div><small>主屋二层</small><b id="dim-second">4.00</b><span>m</span></div><div><small>后部晒台</small><b id="dim-terrace">4.80</b><span>m</span></div></div><p class="note">类型化重构，尺寸为场景设计值。砖瓦、木窗、石框以实体构件表现。</p></section></div><div class="side-foot"><a class="download" href="shikumen-house.glb" download>下载 B1 主户 · GLB</a><div class="secondary"><a href="shikumen-block.glb" download>下载整个街坊</a><a href="MODEL-README.txt">打开说明</a></div></div></aside></div><script type="importmap">{"imports":{"three":"../source/three.module.js","./house.js":"./house.js?v=1d7c6ccc6333","./assets/hall.js":"./assets/hall.js?v=112fe30c5409","./assets/portal-details.js":"./assets/portal-details.js?v=fc4ffc68505e","./assets/lace-cloths.js":"./assets/lace-cloths.js?v=6d7d246a52da","./assets/front-wing.js":"./assets/front-wing.js?v=6d2f1d79102f","./assets/rear-courtyard.js":"./assets/rear-courtyard.js?v=7c2e6e4851dc","./assets/rear-rim-lock.js":"./assets/rear-rim-lock.js?v=2b1ff044df94","./assets/lighting.js":"./assets/lighting.js?v=d87f736dc0d3","./assets/kitchen.js":"./assets/kitchen.js?v=815d55ae5638","./assets/bedding.js":"./assets/bedding.js?v=1d095bb7dfbf","./assets/brass-ring.js":"./assets/brass-ring.js?v=b15346d9290f","./assets/curtains.js":"./assets/curtains.js?v=969b8b6cc891","./assets/courtyard.js":"./assets/courtyard.js?v=603a8ff2078a","./assets/door-handles.js":"./assets/door-handles.js?v=083fa8df5e4a","./assets/tv-screens.js":"./assets/tv-screens.js?v=af46e9dfb4d3","./assets/house-skirting.js":"./assets/house-skirting.js?v=98179c0877c2","./assets/kitchen-wash.js":"./assets/kitchen-wash.js?v=eef458c8e987","./assets/kitchen-condiments.js":"./assets/kitchen-condiments.js?v=3b175009f9cf","./assets/house-services.js":"./assets/house-services.js?v=a831fd305d3a","./assets/wall-decor.js":"./assets/wall-decor.js?v=1bd7ecf882f6","./assets/kitchen-snack.js":"./assets/kitchen-snack.js?v=5ceac761a36f","./assets/neighbour-life.js":"./assets/neighbour-life.js?v=4f9d22111896","./assets/bicycle-reflections.js":"./assets/bicycle-reflections.js?v=53c2ee8ce72a","./assets/lounge.js":"./assets/lounge.js?v=54c27be0101d","./assets/middle-wing.js":"./assets/middle-wing.js?v=6fdb08052d02","./assets/elder-wardrobe.js":"./assets/elder-wardrobe.js?v=7d8c9da0a54b","./assets/tingzijian.js":"./assets/tingzijian.js?v=c9891b59f5a2","./assets/small-parts.js":"./assets/small-parts.js?v=f4389406b3e1","./assets/attic-room.js":"./assets/attic-room.js?v=e16e722a4349","./assets/terrace.js":"./assets/terrace.js?v=34a364271f9d","./assets/collection-props.js":"./assets/collection-props.js?v=be4f480d6524","./assets/bamboo-seating.js":"./assets/bamboo-seating.js?v=d48764d2b529","./assets/child-room.js":"./assets/child-room.js?v=ed7c84fc8868","./assets/attic-storage.js":"./assets/attic-storage.js?v=edb92e2dd5f2","./assets/middle-wing-fan.js":"./assets/middle-wing-fan.js?v=5801437fa347","./assets/hall-tv-clock.js":"./assets/hall-tv-clock.js?v=cc35da024158","./assets/rear-wing.js":"./assets/rear-wing.js?v=e93fb482b37f","./assets/marital.js":"./assets/marital.js?v=bee4ae9c31a2","./assets/stairwell-props.js":"./assets/stairwell-props.js?v=43eec14d4439","./assets/marital-combo.js":"./assets/marital-combo.js?v=3e0659235dc6","./assets/stairwell.js":"./assets/stairwell.js?v=1fb9bb1b3c8a","./assets/window-hardware.js":"./assets/window-hardware.js?v=67bdf65f2e83","./assets/room-finishing.js":"./assets/room-finishing.js?v=1d366bc84340","./assets/door-bolts.js":"./assets/door-bolts.js?v=37e2fab188b5","./assets/hall-rearrange.js":"./assets/hall-rearrange.js?v=c881da550e70","./assets/storage.js":"./assets/storage.js?v=6908cea64126","./assets/wardrobe-clothes.js":"./assets/wardrobe-clothes.js?v=5a5a86c2e2a6"}}</script><script type="module">import {prepareRooms,rooms,allRooms,runtimeStatus} from './data-runtime.js';
+import * as THREE from '../source/three.module.js';
+import {OrbitControls} from '../source/OrbitControls.js';
+import * as HOUSE from './house.js';
+import * as HOUSE_SERVICES from './assets/house-services.js';
+import * as HALL from './assets/hall.js';
+import * as COURTYARD from './assets/courtyard.js';
+import * as REAR_COURTYARD from './assets/rear-courtyard.js';
+import * as FRONT_WING from './assets/front-wing.js';
+import * as REAR_WING from './assets/rear-wing.js';
+import * as MIDDLE_WING from './assets/middle-wing.js';
+import * as ATTIC_STORAGE from './assets/attic-storage.js';
+import * as ATTIC_ROOM from './assets/attic-room.js';
+import * as STORAGE from './assets/storage.js';
+import * as CHILD_ROOM from './assets/child-room.js';
+import * as LOUNGE from './assets/lounge.js';
+import * as MARITAL from './assets/marital.js';
+import * as TINGZI from './assets/tingzijian.js';
+import * as STAIRWELL from './assets/stairwell.js';
+import * as STAIRWELL_PROPS from './assets/stairwell-props.js';
+import * as HOUSE_LIGHTING from './assets/lighting.js';
+import * as HOUSE_TV_SCREENS from './assets/tv-screens.js';
+import * as HOUSE_CURTAINS from './assets/curtains.js';
+import * as HOUSE_WALL_DECOR from './assets/wall-decor.js';
+(async function(){
+  'use strict';
+  const $=id=>document.getElementById(id);
+  const state={houseId:'B1',floors:'all',roof:true,cut:false,context:true,doorsOpen:false,windowsOpen:false,cabinetOpen:false,riceOpen:false,bathingOpen:false,bathingRaised:false,labels:false,clay:false,stairLights:true,lighting:'dusk'};
+  const LAMP_PRESETS={evening:{hallTv:true,hall:true,frontWing:true,middleDesk:true,childDesk:true,maritalBedside:true,tingzijian:true,stair:true,atticRoom:true,atticStorage:true},all:Object.fromEntries([...HOUSE_LIGHTING.HOUSE_LAMP_IDS,'atticStorage',...HOUSE_TV_SCREENS.TV_SCREEN_IDS].map(id=>[id,true])),off:{}};
+  const LAMP_CHIPS=[['hall','客堂'],['frontWing','老人房'],['middleCeiling','中厢顶灯'],['middleDesk','中厢台灯'],['kitchen','厨房'],['rearWing','后厢'],['tingzijian','亭子间'],['stair','楼梯'],['lounge','起居间'],['maritalCeiling','婚房顶灯'],['maritalBedside','婚房床头'],['childCeiling','孩子房顶灯'],['childDesk','孩子房台灯'],['storage','储藏间'],['atticRoom','阁梯间'],['atticStorage','阁楼'],['hallTv','客堂电视'],['maritalTv','婚房电视']];
+  state.lamps={...LAMP_PRESETS.evening};state.lampPreset='evening';
+  const ATTIC_STORAGE_VIEWS=['loft','loftreverse','loftwest','lofteast','loftbooks','loftwindow','loftlamp'];
+  const STAIRWELL_VIEWS=['stairwell','stairwellreverse','stairstorage','stairlamps'];
+  const houseOrder=['A1','A2','A3','B1','A4','A5','A6','A7','A8','B2'];
+  const rowNames=['第一排','第二排','第三排'];
+  const rowFor=id=>houseOrder.indexOf(id)<4?0:houseOrder.indexOf(id)<7?1:2;
+  const wait=()=>new Promise(r=>setTimeout(r,35));
+  window.__V3_STATUS={ready:false,errors:[],selectedHouse:'B1',selection:{requested:'B1',loading:false}};
+  try{
+    const scene=new THREE.Scene();scene.background=new THREE.Color(0xe7dfce);
+    const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
+    renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.7));renderer.outputColorSpace=THREE.SRGBColorSpace;
+    renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
+    renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;
+    $('canvas').appendChild(renderer.domElement);
+    const orthographicCamera=new THREE.OrthographicCamera(-20,20,15,-15,.1,230),interiorCamera=new THREE.PerspectiveCamera(64,1,.03,100);
+    let camera=orthographicCamera;
+    const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=false;
+    controls.minPolarAngle=.03;controls.maxPolarAngle=Math.PI*.487;controls.minZoom=.45;controls.maxZoom=6;
+    controls.panSpeed=.7;controls.rotateSpeed=.62;controls.zoomSpeed=.8;controls.screenSpacePanning=true;
+    const streetParams=new URLSearchParams(location.search),buildStreet=streetParams.has('buildStreet');
+    const streetLevel=streetParams.get('street')==='near'?'near':'far',streetLoadStart=performance.now();
+    $('progress').textContent=streetLevel==='near'?'正在读取实体瓦街区…':'正在读取街区外观…';
+    const streetSnapshot=buildStreet?null:await (await import('./street-runtime.js')).loadStreet(streetLevel);
+    window.__V3_STATUS.streetSnapshotLoadMs=performance.now()-streetLoadStart;
+    window.__V3_STATUS.streetSnapshotLevel=streetSnapshot?streetLevel:'build';
+    if(!streetSnapshot)await prepareRooms(streetParams.get('buildStreet')==='near'?['__street-detail__']:[]);
+    const materials=HOUSE.getShikumenMaterials();await wait();
+    $('progress').textContent='正在构建主户、楼梯和阁层…';await wait();
+    let hero=streetSnapshot?.hero||await (streetParams.get('buildStreet')==='near'?HOUSE.buildShikumenAsync:HOUSE.buildShikumen)({id:'B1',type:'B',number:'27',materials,detail:'hero',interior:true,attic:true,dormer:true,
+      partyWest:false,partyEast:false,name:'石库门_V3.2_B1_27号_双开间单厢端户'});
+    hero.userData.id='B1';seedBathingRest(hero);scene.add(hero);
+    $('progress').textContent='正在搭起三排住宅、沿街店屋与弄堂…';await wait();
+    let neighbours=streetSnapshot?.neighbours||HOUSE.buildNeighbourhood({materials});scene.add(neighbours);
+    // Far roofs keep the original cut domains and window holes. Mipmapped colour/normal
+    // tiles replace subpixel geometry only in the block overview; close views use the originals.
+    function makeRoofPreview(owner,descriptors){
+      const root=new THREE.Group();root.name='街区远景_滤波瓦面';root.visible=false;owner.add(root);
+      const size=256,canvas=document.createElement('canvas');canvas.width=canvas.height=size;
+      const ctx=canvas.getContext('2d'),pixels=ctx.createImageData(size,size);
+      for(let y=0;y<size;y++)for(let x=0;x<size;x++){
+        const u=x/size*4,v=y/size*4,phase=(u%1)*Math.PI*2;
+        const tone=1+.07*Math.cos(phase)-.04*Math.pow(.5+.5*Math.cos(v*Math.PI*2),12)+.025*Math.sin(Math.floor(u)*7+Math.floor(v)*13);
+        const i=(y*size+x)*4;pixels.data[i]=Math.round(98*tone);pixels.data[i+1]=Math.round(104*tone);pixels.data[i+2]=Math.round(97*tone);pixels.data[i+3]=255;
+      }
+      ctx.putImageData(pixels,0,0);const map=new THREE.CanvasTexture(canvas);map.colorSpace=THREE.SRGBColorSpace;map.wrapS=map.wrapT=THREE.RepeatWrapping;map.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+      const normalCanvas=document.createElement('canvas');normalCanvas.width=normalCanvas.height=size;const nc=normalCanvas.getContext('2d'),np=nc.createImageData(size,size);
+      for(let y=0;y<size;y++)for(let x=0;x<size;x++){const nx=.65*Math.sin(x/size*8*Math.PI),i=(y*size+x)*4;np.data[i]=Math.round((nx*.5+.5)*255);np.data[i+1]=128;np.data[i+2]=Math.round((Math.sqrt(1-nx*nx)*.5+.5)*255);np.data[i+3]=255;}
+      nc.putImageData(np,0,0);const normalMap=new THREE.CanvasTexture(normalCanvas);normalMap.wrapS=normalMap.wrapT=THREE.RepeatWrapping;normalMap.anisotropy=map.anisotropy;
+      const material=new THREE.MeshStandardMaterial({map,normalMap,normalScale:new THREE.Vector2(.65,.65),roughness:.94,metalness:0,side:THREE.DoubleSide});material.name='远景青瓦_自动缩小过滤';
+      for(const d of descriptors){
+        const n=new THREE.Vector3(...d.normal),v=new THREE.Vector3(...d.uphill),u=new THREE.Vector3().crossVectors(n,v),origin=new THREE.Vector3(...d.origin),pos=[],uv=[];
+        for(const poly of d.polys){const points=poly.map(p=>new THREE.Vector2(...p));for(const ids of THREE.ShapeUtils.triangulateShape(points,[]))for(const i of ids){const[x,s]=poly[i],y=origin.y-(n.x*(x-origin.x)+n.z*(-s-origin.z))/n.y+.045;const p=new THREE.Vector3(x,y,-s),rel=p.clone().sub(origin);pos.push(...p.toArray());uv.push(rel.dot(u)/.76,rel.dot(v)/.38);}}
+        const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.computeVertexNormals();
+        // Use the exact slope normal across every triangulated domain.
+        const normals=g.attributes.normal;for(let i=0;i<normals.count;i++)normals.setXYZ(i,n.x,n.y,n.z);
+        const m=new THREE.Mesh(g,material);m.matrixAutoUpdate=false;m.matrix.fromArray(d.matrix);m.receiveShadow=true;m.castShadow=true;root.add(m);
+      }
+      const tiles=[];owner.traverse(o=>{if(!o.isMesh)return;let tile=o.userData.v3RoofRole==='tile';for(let a=o.parent;a&&a!==owner;a=a.parent)tile||=a.userData.kind==='v3-physical-tiled-face';if(tile)tiles.push(o);});
+      return {root,tiles,far:false};
+    }
+    function snapshotPreview(owner){
+      const root=owner.getObjectByName('街区远景_滤波瓦面');
+      if(!root)throw new Error('街区快照缺少远近屋面切换数据');
+      if(owner.userData.fastStreetSnapshot)return {root,tiles:[],far:true,snapshot:true};
+      const tiles=[];owner.traverse(o=>{if(!o.isMesh)return;let tile=o.userData.v3RoofRole==='tile';for(let a=o.parent;a&&a!==owner;a=a.parent)tile||=a.userData.kind==='v3-physical-tiled-face';if(tile)tiles.push(o);});
+      return {root,tiles,far:root.visible,snapshot:!!owner.userData.fastStreetSnapshot};
+    }
+    function neighbourPreview(){return neighbours.userData.fastStreetSnapshot||neighbours.userData.fastStreetDetailSnapshot?snapshotPreview(neighbours):makeRoofPreview(neighbours,neighbours.userData.roofPreviews);}
+    function heroPreview(){
+      if(hero.userData.fastStreetSnapshot||hero.userData.fastStreetDetailSnapshot)return snapshotPreview(hero);
+    hero.updateMatrixWorld(true);const heroRoofDescriptors=[];
+    const heroInverse=hero.matrixWorld.clone().invert();hero.traverse(o=>{if(o.userData.roofPreview)heroRoofDescriptors.push({...o.userData.roofPreview,matrix:heroInverse.clone().multiply(o.matrixWorld).toArray()});});
+    // The approved attic replaces part of B1 with a saved copy of the same roof.
+    // Its main slopes are covered by the descriptors above; its saved dormer uses
+    // the identical shared domain, expressed in house coordinates (not asset-local coordinates).
+    hero.traverse(o=>{if(o.userData.kind==='v3-physical-tiled-face'&&o.userData.roofOwner==='dormer'&&!o.userData.roofPreview){
+      const d=neighbours.userData.roofPreviews.find(d=>JSON.stringify(d.polys)===JSON.stringify(o.userData.planDomains));
+      if(!d)throw new Error('阁楼老虎窗远景边界未匹配');heroRoofDescriptors.push({...d,matrix:new THREE.Matrix4().toArray()});
+    }});
+      return makeRoofPreview(hero,heroRoofDescriptors);
+    }
+    const roofPreviews=[neighbourPreview(),heroPreview()];
+    function updateRoofPreview(){
+      const metresPerPixel=camera.isOrthographicCamera?(camera.top-camera.bottom)/camera.zoom/height:0;
+      // Street shadows span up to 88 m. Use finer samples on approach and
+      // match receiver clearance to the current texel footprint, with hysteresis.
+      const sunMapSize=state.context&&metresPerPixel<(sun.shadow.mapSize.x===4096?.022:.018)?4096:2048;
+      if(sun.shadow.mapSize.x!==sunMapSize){sun.shadow.map?.dispose();sun.shadow.map=null;sun.shadow.mapSize.set(sunMapSize,sunMapSize);renderer.shadowMap.needsUpdate=true;}
+      sun.shadow.normalBias=state.context?Math.max(.008,2*sun.shadow.camera.right/sunMapSize*1.4):.008;
+      if(state.context&&metresPerPixel>0&&metresPerPixel<.035&&neighbours.userData.fastStreetSnapshot)ensureStreetDetail().catch(e=>{console.error(e);window.__V3_STATUS.errors.push(e.message);});
+      for(const p of roofPreviews){if(p.snapshot)continue;const far=state.context&&state.roof&&selectedId==='B1'&&metresPerPixel>(p.far?.020:.025);if(far===p.far)continue;p.far=far;p.root.visible=far;p.tiles.forEach(o=>o.visible=!far);renderer.shadowMap.needsUpdate=true;}
+      window.__V3_STATUS.roofPreview={far:roofPreviews[0].far,metresPerPixel,nearGeometryPreserved:true};
+    }
+    const dimensions=hero.userData.dimensions||HOUSE.SHIKUMEN_DIMENSIONS;
+    const heroRecord={id:'B1',type:'B',number:'27',width:dimensions.width,depth:dimensions.depth,s:0,
+      worldPosition:hero.position.toArray(),...neighbours.userData.heroOmitted};
+    heroRecord.worldPosition=neighbours.userData.heroOmitted?.worldPosition||hero.position.toArray();
+    const houseRecords=new Map((neighbours.userData.placements||[]).map(p=>[p.id,{...p}]));
+    houseRecords.set('B1',heroRecord);
+    for(const id of houseOrder)if(!houseRecords.has(id))throw new Error('缺少住宅位置：'+id);
+    const houseCache=new Map([['B1',hero]]),roofMasks=new Map(),kitchenMasks=new Map(),hallMasks=new Map(),courtyardMasks=new Map(),rearMasks=new Map(),frontWingMasks=new Map(),rearWingMasks=new Map(),middleWingMasks=new Map(),stairwellMasks=new Map(),tingziMasks=new Map(),maritalMasks=new Map(),loungeMasks=new Map(),childRoomMasks=new Map(),storageMasks=new Map(),atticStorageMasks=new Map(),atticRoomMasks=new Map(),maritalReflections=new WeakMap();
+    let selectedId='B1',selectedRoot=hero,selectionSerial=0;
+    const heroCenterX=hero.position.x+heroRecord.width/2;
+
+    const hemi=new THREE.HemisphereLight(0xc0d0d5,0x756754,1.6),sun=new THREE.DirectionalLight(0xffd9b4,3.1),fill=new THREE.DirectionalLight(0xc6d5d9,.6);
+    sun.position.set(-18,23,18);sun.target.position.set(-1,2,-12);sun.castShadow=true;
+    sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.near=.5;sun.shadow.camera.far=150;sun.shadow.normalBias=.008;sun.shadow.bias=-.00006;
+    fill.position.set(16,12,-12);scene.add(hemi,sun,sun.target,fill,fill.target);
+    const lightPositionsB=[[0,2.5,-5],[3.4,2.4,-2.4],[0,5.65,-4.8],[0,3.5,-13.4],[3.4,5.6,-12.5]];
+    const lightPositionsA=[[0,2.5,-5],[0,2.5,-9],[0,5.65,-4.8],[0,3.5,-13.4],[0,7.6,-6.4]];
+    const lights=lightPositionsB.map(p=>{const l=new THREE.PointLight(0xffbd77,12,6,2);l.position.set(...p);scene.add(l);return l;});
+    const stairLights=[45,32,32].map((power,i)=>{const l=new THREE.PointLight(0xffc080,power,7,2);l.name='楼梯间实际照明_L'+(i+1);l.castShadow=true;l.shadow.mapSize.set(1024,1024);l.shadow.bias=-.00005;l.shadow.normalBias=.001;l.visible=false;scene.add(l);return l;});
+    // Night uses a fixed pool of light slots so every material compiles once for the night lighting and never again
+    // when lamps are switched or rooms are changed. The nearest lit lamps fill the slots.
+    const NIGHT_SLOTS=14,CLOSEUP_SLOTS=4,houseLampLights=[];let tvAnimating=false,tvLastTick=0;let houseLampStates=[],nightCandidates=[],lampShadowsAllowed=false,nightActive=false;const transmissive=new Map();
+    for(let i=0;i<NIGHT_SLOTS;i++){const l=new THREE.PointLight(0xffc27a,0,7,2);l.name='夜间灯光槽位_'+(i+1);l.shadow.mapSize.set(512,512);l.shadow.camera.near=.02;l.shadow.bias=-.0002;l.shadow.normalBias=.002;l.visible=false;scene.add(l);houseLampLights.push(l);}
+    const base=new THREE.Mesh(new THREE.BoxGeometry(10,.22,19),new THREE.MeshStandardMaterial({color:0xb2af9b,roughness:1}));
+    base.position.set(heroCenterX,-.19,-7.5);base.receiveShadow=true;scene.add(base);
+    const soloPaving=HOUSE.buildStreetPaving([[-3.4,6.5,.05,2.1],[-3.4,6.5,-17,-15.03]],materials);scene.add(soloPaving);
+    const clay=new THREE.MeshStandardMaterial({color:0xc4c8b9,roughness:.91,metalness:0});
+    const presets={
+      doorbolt:{name:'老人房 · 门内侧',position:[2.8,1.56,-3.73],target:[1.84,1.27,-3.82],span:1.05,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      gatebolts:{name:'大门 · 内侧插销',position:[.45,2.15,-2.4],target:[0,1.51,-.14],span:3.0,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      gatebar:{name:'大门 · 横闩',position:[.25,1.82,-1.2],target:[0,1.58,-.15],span:.65,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      gatetopbolt:{name:'大门 · 上插销',position:[.3,2.6,-1.0],target:[.027,2.65,-.15],span:.45,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      gatebottombolt:{name:'大门 · 下插销',position:[.3,.56,-1.0],target:[.027,.27,-.15],span:.45,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      doorhandleinner:{name:'老人房 · 门把手内侧',position:[2.66,1.36,-4.05],target:[1.839,1.154,-3.863],span:.68,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      doorhandleouter:{name:'老人房 · 门把手外侧',position:[1.03,1.36,-4.05],target:[1.839,1.154,-3.863],span:.68,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      bathstorage:{"name":"后厢 · 澡盆与脸盆","position":[1.46,3.1,-10.7],"target":[4.21,0.87,-13.38],"span":2.5,"state":{"floors":"ground","roof":false,"cut":false,"context":false,"labels":false,"doorsOpen":false,"windowsOpen":false,"cabinetOpen":false}},
+      frontpot:{"name":"老人房 · 矮柜旁痰盂","position":[4.75,2.26,2.62],"target":[2.46,0.3,-0.43],"span":1.1,"state":{"floors":"ground","roof":false,"cut":false,"context":false,"labels":false,"doorsOpen":false,"windowsOpen":false,"cabinetOpen":false}},
+      tingzipower:{"name":"亭子间台扇插接","position":[1.0,3.9,-13.25],"target":[0.35,3.12,-14.56],"span":1.6,"state":{"floors":"mezzanine","roof":false,"cut":false,"context":false,"labels":false,"doorsOpen":false,"windowsOpen":false,"cabinetOpen":false}},
+      tingzipot:{"name":"亭子间 · 床侧痰盂","position":[-0.5,3.6,-12.25],"target":[0.46,2.69,-12.86],"span":1.1,"state":{"floors":"mezzanine","roof":false,"cut":false,"context":false,"labels":false,"doorsOpen":false,"windowsOpen":false,"cabinetOpen":false}},
+      maritalpot:{"name":"婚房 · 床侧痰盂","position":[6.76,5.3,-1.4],"target":[4.52,4.29,-1.26],"span":1.1,"state":{"floors":"second","roof":false,"cut":false,"context":false,"labels":false,"doorsOpen":false,"windowsOpen":false,"cabinetOpen":false}},
+      childpot:{"name":"孩子房 · 床脚痰盂","position":[4.56,5.5,-10.8],"target":[2.36,4.29,-12.43],"span":1.1,"state":{"floors":"second","roof":false,"cut":false,"context":false,"labels":false,"doorsOpen":false,"windowsOpen":false,"cabinetOpen":false}},
+
+      exterior:{name:'这户与弄堂',position:[24,36,18],target:[-3,3.3,-7],span:26,state:{floors:'all',roof:true,cut:false,context:true,labels:false,doorsOpen:false}},
+      block:{name:'整个街坊 · 三排十户',position:[42,55,40],target:[-2,2,-20],span:58,state:{floors:'all',roof:true,cut:false,context:true,labels:false,doorsOpen:false}},
+      hero:{name:'单独这一户',position:[-18,27,18],target:[1.2,3.5,-7.5],span:20,state:{floors:'all',roof:true,cut:false,context:false,labels:false,doorsOpen:false}},
+      frontwing:{name:'前厢 · 老人卧房',position:[10,7,6],target:[3.45,1.4,-2.7],span:7.4,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      frontwingreverse:{name:'前厢 · 朝南窗',position:[-3,7,-11],target:[3.45,1.4,-2.7],span:7.4,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      frontwinghouse:{name:'前厢在整屋',position:[18,24,16],target:[1.6,.8,-5.4],span:17,state:{floors:'ground',roof:false,cut:true,context:false,labels:true,doorsOpen:false}},
+      rearwing:{name:'后厢 · 杂物间',position:[10,7,-4],target:[3.45,1.4,-12.5],span:7.4,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      rearwingreverse:{name:'后厢 · 朝樟木箱',position:[-3,7,-21],target:[3.45,1.4,-12.5],span:7.4,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      rearwinghouse:{name:'后厢在整屋',position:[18,24,8],target:[1.6,.8,-8.4],span:17,state:{floors:'ground',roof:false,cut:true,context:false,labels:true,doorsOpen:false}},
+      middlewing:{name:'中厢 · 读书与缝纫',position:[-3,7,-16],target:[3.45,1.4,-7.71],span:7.4,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      middlewingreverse:{name:'中厢 · 朝书柜',position:[10,7,1],target:[3.45,1.4,-7.71],span:7.4,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      middlewinghouse:{name:'中厢在整屋',position:[18,24,12],target:[1.6,.8,-6.9],span:17,state:{floors:'ground',roof:false,cut:true,context:false,labels:true,doorsOpen:false}},
+      rearwell:{name:'后天井 · 朝厨房',position:[4.2,5.5,-7.3],target:[.15,1,-11.25],span:4.55,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      rearreverse:{name:'后天井 · 清洁器具',position:[-3.8,4.8,-15.5],target:[.15,1,-11.25],span:4.55,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      rearhouse:{name:'后天井在整屋',position:[13,24,-30],target:[1,.8,-9.0],span:17,state:{floors:'ground',roof:false,cut:true,context:false,labels:false,doorsOpen:false}},
+      courtyard:{name:'前天井 · 洗晒与盆栽',position:[6.3,6.0,4.8],target:[0,1.5,-1.65],span:6.15,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      courtyardreverse:{name:'前天井 · 朝黑漆门',position:[-6.3,6.0,-7.5],target:[0,1.5,-1.45],span:6.15,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      courtyardhouse:{name:'前天井与客堂 · 整屋一层',position:[12,23,18],target:[1.1,.8,-5.1],span:17,state:{floors:'ground',roof:false,cut:true,context:false,labels:false,doorsOpen:false}},
+      hall:{name:'客堂 · 饭桌与电视墙',position:[-7.3,7.3,3.96],target:[0,1.55,-5.44],span:7.5,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      hallreverse:{name:'客堂 · 朝前天井',position:[7.2,7.3,-13.24],target:[0,1.55,-5.44],span:7.5,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      hallhouse:{name:'客堂在整屋 · 六扇隔扇',position:[17,27,-31],target:[1.4,.8,-7.6],span:18.5,state:{floors:'ground',roof:false,cut:true,context:false,labels:true,doorsOpen:false}},
+      hallpower:{"name":"电视接电","position":[0.51,1.6,-5.9],"target":[1.72,0.72,-6.3],"span":1.65,"state":{"floors":"ground","roof":false,"cut":false,"context":false,"labels":false,"doorsOpen":false,"windowsOpen":false,"cabinetOpen":false}},
+      halltea:{name:'玻璃橱 · 茶叶罐',position:[-.03,1.12,-7.06],target:[-.10,1.055,-7.46],span:.30,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      hallcabinet:{name:'电视矮柜',position:[-.8,2.4,-3.9],target:[1.35,.78,-5.74],span:2.8,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      kitchenhouse:{name:'厨房在这一层',position:[14,30,6],target:[1.25,.9,-7.6],span:18,state:{floors:'ground',roof:false,cut:true,context:false,labels:true,doorsOpen:false}},
+      rearlockinner:{name:'后门 · 方盒锁内侧',position:[.03,1.34,-13.9],target:[-.34,1.13,-14.80],span:.48,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      rearlockouter:{name:'后门 · 外侧黄铜锁芯',position:[.03,1.34,-15.8],target:[-.315,1.134,-14.96],span:.40,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      rearlockdoor:{name:'后门 · 整扇开合',position:[-1.4,2.6,-12.7],target:[.02,1.15,-14.5],span:2.6,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      kitchen:{name:'厨房近看',position:[3.0,4.2,-8.3],target:[-.1,1.1,-13.45],span:4.6,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      kitchendoor:{name:'通后天井木门做旧',position:[-.75,2.3,-14.15],target:[.60,1.12,-12.1],span:3.15,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      // 开小灶 corner, south-east of the kitchen: same viewing direction as 厨房近看, closer in (approved sample views, 2026-11-13).
+      kitchensnack:{name:'厨房 · 开小灶',position:[4.56,3.65,-7.5],target:[1.46,.55,-12.65],span:1.77,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      kitchensnacktop:{name:'开小灶 · 台面',position:[4.62,3.92,-7.3],target:[1.52,.82,-12.45],span:.77,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      kitchengas:{"name":"煤气灶接管","position":[0.05,1.95,-11.7],"target":[-1.69,1.02,-12.85],"span":1.35,"state":{"floors":"ground","roof":false,"cut":false,"context":false,"labels":false,"doorsOpen":false,"windowsOpen":false,"cabinetOpen":false}},
+      kitchencondiments:{name:'厨房 · 油盐糖酱醋',position:[1.3,2.2,-12.3],target:[-1.65,.91,-13.65],span:1.26,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      kitchentoothpaste:{name:'厨房 · 水斗边洗漱',position:[.4,2.2,-12.6],target:[-.8,.98,-14.43],span:.92,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      kitchenrice:{name:'厨房 · 木盖米缸',position:[.25,.95,-12.75],target:[1.05,.33,-13.45],span:.95,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      maritalwatchface:{name:'上海手表 · 表盘细看',position:[4.46,5.196,-3.58],target:[4.61,4.751,-3.78],span:.065,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      maritalwatch:{name:'婚房 · 上海牌手表',position:[4.50,5.02,-3.57],target:[4.61,4.749,-3.78],span:.25,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      kitchenkeys:{name:'厨房窗台 · 一串钥匙',position:[-.85,1.67,-14.22],target:[-.826,1.19,-14.875],span:.30,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      kitchensink:{name:'水斗与旧木窗',position:[.65,2.65,-11.65],target:[-.85,1.1,-14.28],span:2.8,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      ground:{name:'一层 · 前后天井',position:[21,27,23],target:[1.4,.7,-7.6],span:18.5,state:{floors:'ground',roof:false,cut:true,context:false,labels:true,doorsOpen:true}},
+      loft:{"name":"阁楼 · 箱包与旧物","position":[6.06,11.7,-0.5],"target":[1.56,6.95,-6.6],"span":8.3,"state":{"floors":"attic","roof":false,"loftRoof":false,"cut":true,"context":false,"labels":false,"doorsOpen":false,"windowsOpen":false,"cabinetOpen":false}},
+      loftreverse:{"name":"阁楼 · 反向看梯口","position":[-4.84,11.4,-14],"target":[1.41,6.45,-7.2],"span":8.3,"state":{"floors":"attic","roof":false,"loftRoof":false,"cut":true,"context":false,"labels":false,"doorsOpen":false,"windowsOpen":false,"cabinetOpen":false}},
+      loftwest:{"name":"阁楼 · 西侧箱包","position":[1.34,8.07,-6.23],"target":[-0.28,7.33,-7.7],"span":2.6,"state":{"floors":"attic","roof":false,"loftRoof":true,"cut":false,"context":false,"labels":false,"doorsOpen":false,"windowsOpen":false,"cabinetOpen":false}},
+      lofteast:{"name":"阁楼 · 东侧卷席与竹篮","position":[3.06,8.12,-5.92],"target":[4.04,7.27,-7.4],"span":2.7,"state":{"floors":"attic","roof":false,"loftRoof":true,"cut":false,"context":false,"labels":false,"doorsOpen":false,"windowsOpen":false,"cabinetOpen":false}},
+      loftbooks:{"name":"阁楼 · 旧书与报纸","position":[0.66,8.1,-6.84],"target":[0.94,7.17,-5.74],"span":2.0,"state":{"floors":"attic","roof":false,"loftRoof":false,"cut":false,"context":false,"labels":false,"doorsOpen":false,"windowsOpen":false,"cabinetOpen":false}},
+      loftwindow:{"name":"阁楼 · 老虎窗与室内风钩","position":[-0.22,8.48,-6.02],"target":[-0.44,8.62,-5.12],"span":1.6,"state":{"floors":"attic","roof":false,"loftRoof":true,"cut":false,"context":false,"labels":false,"doorsOpen":false,"windowsOpen":false,"cabinetOpen":false}},
+      loftlamp:{"name":"阁楼 · 壁灯与梯口","position":[4.56,8.22,-7.8],"target":[1.9,8.0,-7.25],"span":2.4,"state":{"floors":"attic","roof":false,"loftRoof":true,"cut":false,"context":false,"labels":false,"doorsOpen":false,"windowsOpen":false,"cabinetOpen":false}},
+      atticroom:{name:'阁梯间 · 衣物整理角',position:[-3.0,10,-1.4],target:[3.45,5.15,-7.85],span:6.8,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false,cabinetOpen:false}},
+      atticroomreverse:{name:'阁梯间 · 反向看木梯',position:[10,10,-15],target:[3.45,5.15,-7.85],span:6.8,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false,cabinetOpen:false}},
+      atticroomtable:{name:'阁梯间 · 未接电的熨斗与整理桌',position:[2.0,6.1,-5.7],target:[4.60,4.78,-6.86],span:2.1,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false,cabinetOpen:false}},
+      atticroomlamp:{name:'阁梯间 · 白瓷壁座与透明钨丝灯泡',position:[2.7,6.7,-6.5],target:[4.83,6.23,-7.96],span:.78,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false,cabinetOpen:false}},
+      atticroomlanding:{name:'阁梯间 · 梯口与连续扶手',position:[-.2,9.3,-4.6],target:[2.75,6.65,-7.65],span:3.8,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false,cabinetOpen:false}},
+      atticroomhouse:{name:'阁梯间 · 二楼整屋',position:[15,16,12],target:[1.56,4,-7.3],span:19,state:{floors:'second',roof:false,cut:true,context:false,labels:false,doorsOpen:false,windowsOpen:false,cabinetOpen:false}},
+      storage:{name:'二楼衣被储藏间 · 木架与衣箱',position:[5.5,9.0,-.8],target:[-.51,5.05,-7.4],span:4.5,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      storagereverse:{name:'二楼衣被储藏间 · 门与南墙',position:[-6.5,9,-13.8],target:[-.51,5.05,-7.4],span:4.5,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      storagehouse:{name:'衣被储藏间 · 二楼整屋',position:[15,16,12],target:[1.56,4.0,-7.3],span:19,state:{floors:'second',roof:false,cut:true,context:false,labels:false,doorsOpen:false}},
+      storagelamp:{name:'储藏间 · 透明钨丝灯泡',position:[-1.31,6.47,-8.20],target:[-.51,6.30,-7.40],span:.40,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      storagechest:{name:'衣箱 · 翻盖与内腔',position:[1.3,6.5,-4.9],target:[-.55,4.45,-8.05],span:1.95,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      childchest:{name:"孩子卧房 · 原图五斗橱",position:[5.1, 5.65, -10.25],target:[2.27, 4.56, -11.38],span:1.85,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false,cabinetOpen:false}},
+      hallphone:{name:"客堂 · 橙色拨盘电话",position:[-0.15, 1.42, -4.33],target:[1.52, 0.85, -5.2],span:0.72,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false,cabinetOpen:false}},
+      hallcoat:{name:"客堂 · 挂钩木盒与外套",position:[1.26, 2.45, -6.5],target:[-1.72, 1.32, -4.1],span:2.1,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false,cabinetOpen:false}},
+      frontclock:{name:"老人房 · 木壳台钟",position:[3.8, 1.35, -1.45],target:[3.12, 0.9, -0.58],span:0.64,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false,cabinetOpen:false}},
+      middlepower:{"name":"中厢台灯插接","position":[2.05,1.5,-6.8],"target":[2.73,0.67,-5.43],"span":1.35,"state":{"floors":"ground","roof":false,"cut":false,"context":false,"labels":false,"doorsOpen":false,"windowsOpen":false,"cabinetOpen":false}},
+      middlecard:{name:'中厢 · 工作证',position:[3.55,1.17,-6.05],target:[3.542,.851,-5.77],span:.32,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false,cabinetOpen:false}},
+      middlecup:{name:"中厢 · 搪瓷水杯",position:[3.3, 1.37, -6.3],target:[3.76, 0.92, -5.49],span:0.48,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false,cabinetOpen:false}},
+      childroom:{name:'孩子卧房 · 床与写字台',position:[-5.1,10.8,-3.7],target:[3.45,4.95,-12.75],span:6.4,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      childreverse:{name:'孩子卧房 · 五斗橱与房门',position:[12,10.8,-21.5],target:[3.45,4.95,-12.75],span:6.4,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      childhouse:{name:'孩子卧房 · 二楼整屋',position:[15,16,12],target:[1.56,4.0,-7.3],span:19,state:{floors:'second',roof:false,cut:true,context:false,labels:false,doorsOpen:false}},
+      childsheet:{name:'孩子卧房 · 印花棉床单',position:[6.2,7.2,-10.0],target:[2.60,4.45,-13.35],span:2.95,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      childbag:{name:'孩子卧房 · 书包肩带与挂点',position:[3.45,5.15,-12.45],target:[4.19,4.61,-13.4],span:.88,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      childdesk:{name:'孩子卧房 · 书桌柜门与台灯',position:[5.72,5.31,-12.34],target:[4.32,4.51,-14.34],span:1.75,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false,cabinetOpen:false}},
+      childlamp:{name:'孩子卧房 · 蓝绿老式台灯',position:[4.32,4.80,-13.65],target:[3.87,4.94,-14.50],span:.66,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false,cabinetOpen:false}},
+      childcord:{name:'孩子卧房 · 台灯电线与墙插',position:[2.71,4.78,-14.67],target:[3.93,4.56,-14.71],span:.95,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false,cabinetOpen:false}},
+      childbooks:{name:'孩子卧房 · 语文课本封面',position:[4.54,5.65,-13.60],target:[4.54,4.78,-14.51],span:.61,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false,cabinetOpen:false}},
+      childwindow:{name:'孩子卧房 · 室内窗台风钩',position:[3.90,5.55,-12.0],target:[5.10,5.08,-12.72],span:1.1,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      lounge:{name:'楼上小起居间 · 沙发与书柜',position:[7,10.5,1.5],target:[.36,4.95,-4.9],span:6.2,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      loungeflowers:{name:'茶几 · 白栀子与素青瓷瓶',position:[1.57,5.65,-2.85],target:[.035,4.68,-4.60],span:1.15,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      loungedoor:{name:'楼上小起居间 · 婚房门帘',position:[-6.28,10.5,1.5],target:[.36,4.95,-4.9],span:6.2,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      loungereverse:{name:'楼上小起居间 · 四扇窗',position:[7,10.5,-11],target:[.36,4.95,-4.9],span:6.2,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      loungehouse:{name:'楼上小起居间 · 二楼整屋',position:[15,16,12],target:[1.56,4.0,-7.3],span:19,state:{floors:'second',roof:false,cut:true,context:false,labels:false,doorsOpen:false}},
+      marital:{name:'夫妻婚房 · 衣柜与梳妆台',position:[-3,10.5,5],target:[3.45,5.0,-2.7],span:7.1,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      maritalpower:{"name":"床头台灯插接","position":[3.8,5.6,-1.9],"target":[4.8,4.55,-0.62],"span":1.2,"state":{"floors":"second","roof":false,"cut":false,"context":false,"labels":false,"doorsOpen":false,"windowsOpen":false,"cabinetOpen":false}},
+      maritaltv:{name:'婚房 · 组合柜里的小电视',position:[2.45,5.52,-3.30],target:[3.15,4.92,-4.90],span:1.10,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      maritalvanity:{name:'梳妆台 · 日常用品',position:[3.1,5.8,-2.1],target:[4.64,4.97,-3.46],span:1.20,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      maritalreverse:{name:'夫妻婚房 · 床头与房门',position:[10,10.5,-10.5],target:[3.45,5.0,-2.7],span:7.1,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      maritalhouse:{name:'夫妻婚房 · 二楼整屋',position:[15,16,12],target:[1.56,4.0,-7.3],span:19,state:{floors:'second',roof:false,cut:true,context:false,labels:false,doorsOpen:false}},
+      mezzanine:{name:'亭子半层 · 房间与门外小桥',position:[6.0,8.8,-7.5],target:[0,3.35,-13.0],span:5.9,state:{floors:'mezzanine',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      tingzireverse:{name:'亭子半层 · 朝后天井',position:[-6.0,8.8,-19.0],target:[0,3.35,-13.0],span:5.9,state:{floors:'mezzanine',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      terrace:{name:'二楼晒台 · 穿袖晾晒',position:[-5,10,-8],target:[0,5.2,-13.45],span:6.7,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      tingzibridge:{name:'亭子间木桥 · 地板与栏杆',position:[1.8,8.5,-11.4],target:[-1.35,2.85,-11.15],span:3.8,state:{floors:'mezzanine',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      terracebridge:{name:'晒台木桥 · 地板与栏杆',position:[-4.5,14.0,-9.4],target:[-1.35,5.02,-11.15],span:3.4,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      terracereverse:{name:'二楼晒台 · 反向',position:[-5,10,-19],target:[0,5.2,-13.45],span:6.7,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      terracehardware:{name:'晒台 · 挂件与托座',position:[-1,8,-12],target:[1.35,5.95,-13.45],span:2.9,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      second:{name:'二层 · 亭子间与晒台',position:[20,27,24],target:[1.4,3.5,-7.6],span:19.5,state:{floors:'second',roof:false,cut:true,context:false,labels:true,doorsOpen:true}},
+      attic:{name:'阁层 · 木梯与老虎窗',position:[15,18,17],target:[1.4,6.8,-6.5],span:11.4,state:{floors:'attic',roof:false,cut:true,context:false,labels:true,doorsOpen:true}},
+      stairstorage:{name:'楼梯间 · 箱子、报纸与自行车',position:[-1.0,2.35,-4.60],target:[.15,1.45,-9.30],span:3.8,state:{floors:'ground',roof:false,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false}},
+      stairlamps:{name:'楼梯间 · 亭子平台与二楼墙灯',position:[-2.1,6.55,-5.50],target:[.10,4.85,-9.10],span:4.3,state:{floors:'second',roof:false,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false}},
+      stairwell:{name:'楼梯间 · 起步与转角',position:[-7,6,-3],target:[0,2.8,-9.4],span:7.6,state:{floors:'all',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      stairwellreverse:{name:'楼梯间 · 半层回看',position:[7,6,-16],target:[0,2.8,-9.4],span:7.6,state:{floors:'all',roof:false,cut:false,context:false,labels:false,doorsOpen:false}},
+      section:{name:'楼梯与错层剖面',position:[-25,15,-3],target:[1.4,3.7,-8.6],span:18.6,state:{floors:'all',roof:false,cut:true,context:false,labels:false,doorsOpen:true}},
+      roof:{name:'实体小青瓦与屋窗',position:[18,22,17],target:[2,7.6,-6.8],span:11.3,state:{floors:'all',roof:true,cut:false,context:false,labels:false,doorsOpen:false}},
+      roofcover:{name:'侧厢屋檐与墙顶',position:[1.6,31,-25],target:[1.6,6.6,-7.5],span:16.5,state:{floors:'all',roof:true,cut:false,context:false,labels:false,doorsOpen:false}},
+      brickfront:{name:'侧厢前檐转角红砖',position:[-5,7,5],target:[1.8,6.2,-.12],span:3.2,state:{floors:'all',roof:true,cut:false,context:false,labels:false,doorsOpen:false}},
+      brickrear:{name:'侧厢后晒台转角红砖',position:[-5,7,-21],target:[1.8,6.15,-14.88],span:3.5,state:{floors:'all',roof:true,cut:false,context:false,labels:false,doorsOpen:false}},
+      windows:{name:'木窗与风钩',position:[5.7,6.1,-20.4],target:[3.41,5.66,-15.03],span:2.4,state:{floors:'all',roof:true,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false}},
+      windhook:{name:'风钩、合页与插销',position:[4.5,5.35,-17.0],target:[3.88,5.11,-15.17],span:.65,state:{floors:'all',roof:true,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false}},
+      hallwindows:{name:'客堂落地长窗',position:[0,1.75,-.65],target:[0,1.75,-2.96],span:3.9,state:{floors:'all',roof:false,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false}},
+      upperwindows:{name:'前楼两组双扇木窗',position:[2.2,6.3,3],target:[0,5.4,-2.97],span:2.9,state:{floors:'all',roof:true,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false}},
+      dormerwindow:{name:'老虎窗双扇与五金',position:[1.3,9.6,-.5],target:[-.44,8.64,-4.98],span:1.8,state:{floors:'all',roof:true,cut:false,context:false,labels:false,doorsOpen:false,windowsOpen:false}},
+      rainhead:{name:'檐口雨水斗与转角红砖',position:[10.6,8.3,3.4],target:[5.18,6.83,-.42],span:1.65,state:{floors:'all',roof:true,cut:false,context:false,labels:false,doorsOpen:false}},
+      gate:{name:'红砖高墙与石库门头',position:[1.8,3.9,9],target:[0,2.50,0],span:6.10,state:{floors:'all',roof:true,cut:false,context:false,labels:false,doorsOpen:false}},
+      frontage:{name:'临街立面与侧厢',position:[6.3,6.1,15],target:[1.3,4.0,-.7],span:9.0,state:{floors:'all',roof:true,cut:false,context:false,labels:false,doorsOpen:false}},
+      gable:{name:'侧墙与三角山墙',position:[-19,8.0,-6.87],target:[-1.9,6.1,-6.87],span:8.0,state:{floors:'all',roof:true,cut:false,context:false,labels:false,doorsOpen:false}},
+      rear:{name:'房屋后立面',position:[9,8,-27],target:[1.3,4,-13.8],span:11,state:{floors:'all',roof:true,cut:false,context:false,labels:false,doorsOpen:false}},
+      doors:{name:'双门安装效果',position:[.65,1.85,6],target:[0,1.45,0],span:3.6,state:{floors:'all',roof:true,cut:false,context:false,labels:false,doorsOpen:false}},
+      hardware:{name:'铜门环近看',position:[.35,1.5,3],target:[0,1.33,0],span:.70,state:{floors:'all',roof:true,cut:false,context:false,labels:false,doorsOpen:false}},
+      relief:{name:'三角浮雕近看',position:[.6,4.1,6],target:[0,3.96,.12],span:2.7,state:{floors:'all',roof:true,cut:false,context:false,labels:false,doorsOpen:false}},
+      threshold:{name:'门槛石材',position:[1.3,1.8,2.8],target:[0,.08,-.10],span:1.8,state:{floors:'all',roof:true,cut:false,context:false,labels:false,doorsOpen:false}}
+    };
+    let span=25,active='exterior',width=1,height=1,frame=0,dirty=true,labels=[];
+    let maritalReflectionTimer;window.addEventListener('shikumen-asset-ready',()=>{dirty=true;clearTimeout(maritalReflectionTimer);maritalReflectionTimer=setTimeout(()=>{if(window.__V3_STATUS.ready){refreshMaritalMirror();dirty=true;}},80);});
+    controls.addEventListener('change',()=>{dirty=true;});
+
+    function rebuildLabels(){
+      $('labels').replaceChildren();
+      labels=(selectedRoot.userData.rooms||[]).map(room=>{
+        const e=document.createElement('div');e.className='room';e.textContent=room.name;$('labels').appendChild(e);return{room,e};
+      });
+    }
+    function updateHouseDetails(){
+      const p=houseRecords.get(selectedId),d=selectedRoot.userData.dimensions||HOUSE.SHIKUMEN_DIMENSIONS;
+      $('house-select').value=selectedId;
+      document.querySelectorAll('[data-view="loft"],[data-view="loftreverse"],[data-view="loftwest"],[data-view="lofteast"],[data-view="loftbooks"],[data-view="loftwindow"],[data-view="loftlamp"],[data-view="atticroom"],[data-view="atticroomreverse"],[data-view="atticroomtable"],[data-view="atticroomlamp"],[data-view="atticroomlanding"],[data-view="atticroomhouse"],[data-view="terrace"],[data-view="terracebridge"],[data-view="tingzibridge"],[data-view="terracereverse"],[data-view="terracehardware"],[data-view="bathstorage"],[data-view="frontpot"],[data-view="tingzipot"],[data-view="tingzipower"],[data-view="maritalpot"],[data-view="childpot"],[data-view="childroom"],[data-view="childreverse"],[data-view="childhouse"],[data-view="childsheet"],[data-view="childbag"],[data-view="childwindow"],[data-view="childdesk"],[data-view="childlamp"],[data-view="childcord"],[data-view="childbooks"],[data-view="storage"],[data-view="storagereverse"],[data-view="storagehouse"],[data-view="storagechest"],[data-view="storagelamp"],[data-view="lounge"],[data-view="loungereverse"],[data-view="loungedoor"],[data-view="loungehouse"],[data-view="marital"],[data-view="maritalvanity"],[data-view="maritalwatch"],[data-view="maritalwatchface"],[data-view="maritaltv"],[data-view="maritalpower"],[data-view="maritalreverse"],[data-view="maritalhouse"],[data-view="stairwell"],[data-view="stairwellreverse"],[data-view="stairstorage"],[data-view="stairlamps"],[data-view="middlewing"],[data-view="middlewingreverse"],[data-view="middlewinghouse"],[data-view="middlecard"],[data-view="middlepower"],[data-view="rearwing"],[data-view="rearwingreverse"],[data-view="rearwinghouse"],[data-view="frontwing"],[data-view="frontwingreverse"],[data-view="frontwinghouse"],[data-view="rearwell"],[data-view="rearreverse"],[data-view="rearhouse"],[data-view="courtyard"],[data-view="courtyardreverse"],[data-view="courtyardhouse"],[data-view="hall"],[data-view="hallreverse"],[data-view="hallhouse"],[data-view="hallcabinet"],[data-view="halltea"],[data-view="hallpower"],[data-view="kitchen"],[data-view="kitchenrice"],[data-view="kitchensink"],[data-view="kitchengas"],[data-view="kitchensnack"],[data-view="kitchensnacktop"],[data-view="kitchenhouse"],[data-view="kitchendoor"]').forEach(b=>b.hidden=selectedId!=='B1');syncViewGroups();
+      $('house-note').textContent=rowNames[rowFor(selectedId)]+' · '+p.number+'号 · '+(p.type==='A'?'单开间':'双开间单厢');
+      $('house-note').classList.remove('error');
+      $('dim-width').textContent=Number(p.width??d.width).toFixed(2);
+      $('dim-depth').textContent=Number(p.depth??d.depth).toFixed(2);
+      $('dim-second').textContent=Number(d.second).toFixed(2);
+      $('dim-terrace').textContent=Number(d.terrace).toFixed(2);
+      $('dimensions-title').textContent=selectedId+' · 本户尺度';
+      window.__V3_STATUS.selectedHouse=selectedId;
+      window.__V3_STATUS.selectedHouseModel={id:selectedId,type:p.type,number:p.number,model:selectedRoot.userData};
+      window.__V3_STATUS.cache={count:houseCache.size,ids:[...houseCache.keys()],limit:3};
+    }
+    function resize(){
+      const r=$('stage').getBoundingClientRect();width=Math.max(1,r.width);height=Math.max(1,r.height);
+      renderer.setSize(width,height,false);if(camera.isPerspectiveCamera)camera.aspect=width/height;else{camera.left=-span*width/height/2;camera.right=-camera.left;camera.top=span/2;camera.bottom=-span/2;}
+      camera.updateProjectionMatrix();dirty=true;
+    }
+    function focusOffset(key){
+      if(key==='block')return new THREE.Vector3();
+      const p=houseRecords.get(selectedId),position=state.context?p.worldPosition:selectedRoot.position.toArray();
+      if(!state.context&&['gate','doors','hardware','threshold','relief','frontage','windows','windhook','upperwindows','hallwindows','dormerwindow'].includes(key))return new THREE.Vector3();
+      return new THREE.Vector3(position[0]+p.width/2-heroCenterX,position[1]||0,position[2]-hero.position.z);
+    }
+    function framePreset(key){
+      const p=presets[key],offset=focusOffset(key),isA=houseRecords.get(selectedId).type==='A'&&!state.context;
+      const interior=['loftwest','lofteast','loftbooks','loftwindow','loftlamp'].includes(key);camera=interior?interiorCamera:orthographicCamera;controls.object=camera;controls.maxPolarAngle=Math.PI*(interior?.53:.487);controls.minDistance=interior?.25:0;controls.maxDistance=interior?22:Infinity;
+      if(interior)camera.fov=['loftwest','lofteast'].includes(key)?64:['loftbooks','loftwindow'].includes(key)?52:42;
+      if(window.__V3_TEST)window.__V3_TEST.camera=camera;
+      span=p.span;
+      if(isA&&['hero','ground','second','section'].includes(key))span*=.94;
+      if(isA&&key==='attic')span=9.5;
+      if(isA&&key==='roof')span=9.6;
+      camera.zoom=1;camera.position.fromArray(p.position).add(offset);controls.target.fromArray(p.target).add(offset);
+      if(key==='attic'&&houseRecords.get(selectedId).type==='B'){
+        span=14.8;camera.position.set(15.16,17.2,16.2).add(offset);controls.target.set(1.56,6,-7.3).add(offset);
+      }
+      if(isA&&['windows','upperwindows'].includes(key)){span=2.8;camera.position.set(2,6.3,3);controls.target.set(0,5.4,-2.975);}
+      if(isA&&key==='windhook'){span=.7;camera.position.set(-.5,4.8,-1.2);controls.target.set(-.95,4.45,-2.81);}
+      if(isA&&key==='dormerwindow'){camera.position.set(1.54,9.6,-.5);controls.target.set(-.20,8.64,-4.98);}
+      controls.update();resize();
+    }
+    let visibleMaritalMirrors=[];
+    function refreshMaritalMirror(){
+      visibleMaritalMirrors=[];
+      if(selectedId!=='B1'||state.context)return;
+      selectedRoot.traverse(o=>{if(!o.isMesh||!o.name.startsWith('独立银镜面'))return;for(let p=o;p;p=p.parent)if(!p.visible)return;let reflection=maritalReflections.get(o);if(!reflection){reflection=MARITAL.createMaritalMirror(THREE,o);maritalReflections.set(o,reflection);}reflection.gameMesh=o;if(!reflection.gameMaterial)reflection.gameMaterial=o.material;visibleMaritalMirrors.push(reflection);});
+    }
+    function restoreAtticStorageMask(root){const saved=atticStorageMasks.get(root);if(!saved)return;for(const[n,v]of saved.original)n.visible=v;saved.inspect.removeFromParent();atticStorageMasks.delete(root);}
+    function showAtticStorage(root){const inspect=ATTIC_STORAGE.createAtticStorageInspection(THREE,root,{roof:!!state.loftRoof,low:state.cut}),original=[];for(const n of root.children){original.push([n,n.visible]);n.visible=false;}root.add(inspect);atticStorageMasks.set(root,{original,inspect});}
+    function restoreAtticRoomMask(root){const saved=atticRoomMasks.get(root);if(!saved)return;for(const[n,v]of saved.original)n.visible=v;saved.inspect.removeFromParent();for(const n of saved.inspect.children){if(n.name==='阁梯间_furniture')continue;n.traverse(o=>{if(o.geometry)o.geometry.dispose();});}atticRoomMasks.delete(root);}
+    function showAtticRoom(root){const inspect=ATTIC_ROOM.createAtticRoomInspection(THREE,root,{reverse:active==='atticroomreverse',landing:active==='atticroomlanding'}),original=[];for(const n of root.children){original.push([n,n.visible]);n.visible=false;}root.add(inspect);atticRoomMasks.set(root,{original,inspect});}
+    function restoreStorageMask(root){const saved=storageMasks.get(root);if(!saved)return;for(const[n,v]of saved.original)n.visible=v;saved.inspect.removeFromParent();for(const n of saved.inspect.children){if(n.name==='储藏间_furniture')continue;n.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material?.name==='储藏间查看剖面封口')o.material.dispose();});}storageMasks.delete(root);}
+    function showStorage(root){const inspect=STORAGE.createStorageInspection(THREE,root),original=[];for(const n of root.children){original.push([n,n.visible]);n.visible=false;}const hidden=['storagereverse','storagelamp'].includes(active)?['north','west']:['south','east'];for(const n of inspect.children)if(hidden.includes(n.userData.storageSide))n.visible=false;root.add(inspect);storageMasks.set(root,{original,inspect});}
+    function restoreChildRoomMask(root){const saved=childRoomMasks.get(root);if(!saved)return;for(const[n,v]of saved.original)n.visible=v;saved.inspect.removeFromParent();for(const n of saved.inspect.children){if(n.name==='孩子卧房_furniture')continue;n.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material?.name==='孩子卧房查看剖面封口')o.material.dispose();});}childRoomMasks.delete(root);}
+    function showChildRoom(root){const inspect=CHILD_ROOM.createChildRoomInspection(THREE,root),original=[];for(const n of root.children){original.push([n,n.visible]);n.visible=false;}const hidden=active==='childreverse'?['north','east']:['childdesk','childchest','childpot'].includes(active)?['south','east']:['south','west'];if(active==='childcord'){const f=inspect.getObjectByName('孩子卧房_furniture');for(const o of f.children)o.visible=['RC03','RL03','RL09'].includes(o.userData.partId);}for(const n of inspect.children)if(hidden.includes(n.userData.childRoomSide))n.visible=false;root.add(inspect);childRoomMasks.set(root,{original,inspect});}
+    function restoreLoungeMask(root){const saved=loungeMasks.get(root);if(!saved)return;for(const[n,v]of saved.original)n.visible=v;saved.inspect.removeFromParent();for(const n of saved.inspect.children){if(n.name==='起居间_furniture')continue;n.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material?.name==='起居间查看剖面封口')o.material.dispose();});}loungeMasks.delete(root);}
+    function showLounge(root){const inspect=LOUNGE.createLoungeInspection(THREE,root),original=[];for(const n of root.children){original.push([n,n.visible]);n.visible=false;}const hidden=active==='loungedoor'?['south','west']:active==='loungereverse'?['north','east']:['south','east'];for(const n of inspect.children)if(hidden.includes(n.userData.loungeSide))n.visible=false;root.add(inspect);loungeMasks.set(root,{original,inspect});}
+    function restoreMaritalMask(root){const saved=maritalMasks.get(root);if(!saved)return;for(const[n,v]of saved.original)n.visible=v;saved.inspect.removeFromParent();for(const n of saved.inspect.children){if(n.name==='婚房_furniture'){n.traverse(o=>{const r=maritalReflections.get(o);if(r){r.dispose();maritalReflections.delete(o);}});continue;}n.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material?.name==='婚房查看剖面封口')o.material.dispose();});}maritalMasks.delete(root);}
+    function showMarital(root){const inspect=MARITAL.createMaritalInspection(THREE,root),floor=root.getObjectByName('L2_二楼'),original=[];for(const n of root.children){original.push([n,n.visible]);n.visible=false;}const hidden=['maritalreverse','maritalpot'].includes(active)?['north','east']:['south','west'];for(const n of inspect.children)if(hidden.includes(n.userData.maritalSide))n.visible=false;inspect.traverse(n=>{if((['maritalreverse','maritalpot'].includes(active)?['ML09']:['ML02','ML07','ML08']).includes(n.userData.partId))n.visible=false;});root.add(inspect);maritalMasks.set(root,{original,inspect});}
+
+    function restoreTingziMask(root){const saved=tingziMasks.get(root);if(!saved)return;for(const[n,v]of saved.original)n.visible=v;saved.inspect.removeFromParent();for(const n of saved.inspect.children){if(n.name==='亭子间_furniture')continue;n.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material?.name==='亭子间剖面灰泥封口')o.material.dispose();});}tingziMasks.delete(root);}
+    function showTingzi(root){const inspect=TINGZI.createTingziInspection(THREE,root),half=root.getObjectByName('L1H_亭子间半层'),original=[];for(const n of half.children){original.push([n,n.visible]);n.visible=false;}const hidden=active==='tingzipot'?['south','west']:active==='tingzireverse'?['north','west']:['south','east'];for(const n of inspect.children)if(hidden.includes(n.userData.tingziSide))n.visible=false;inspect.traverse(n=>{if(n.userData.curtainSide&&(active==='tingzireverse'?n.userData.curtainSide==='north':n.userData.curtainSide==='south'))n.visible=false;});root.add(inspect);tingziMasks.set(root,{original,inspect});}
+
+    function restoreStairwellMask(root){const m=stairwellMasks.get(root);if(!m)return;for(const[n,v]of m.saved)n.visible=v;m.clone.removeFromParent();m.clone.traverse(o=>{if(o.geometry)o.geometry.dispose();});stairwellMasks.delete(root);}
+    function showStairwell(root){const clone=STAIRWELL.createStairwellInspection(THREE,root,active==='stairwellreverse',{retainSideWalls:['stairstorage','stairlamps'].includes(active),maxHeight:active==='stairstorage'?3.45:6.7}),saved=[];for(const n of root.children){saved.push([n,n.visible]);n.visible=false;}root.add(clone);stairwellMasks.set(root,{clone,saved});}
+    function restoreFrontWingMask(root){
+      const m=frontWingMasks.get(root);if(!m)return;for(const[n,v]of m.saved)n.visible=v;m.clone.removeFromParent();m.clone.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.name==='前厢查看封口')o.material.dispose();});frontWingMasks.delete(root);
+    }
+    function showFrontWing(root){
+      root.getObjectByName('前厢_木门')?.traverse(o=>{if(o.userData.kind==='door_leaf')o.rotation.y=state.doorsOpen?1.5:0;});HOUSE.refreshHouseDoorHandles(root);root.updateMatrixWorld(true);
+      const clone=FRONT_WING.createFrontWingInspection(THREE,root),saved=[],floor=root.getObjectByName('L0_一楼');
+      for(const n of floor.children)if(n.name!=='前厢_furniture'){saved.push([n,n.visible]);n.visible=false;}
+      const cut=['frontwingreverse','frontclock'].includes(active)?['north','west']:['south','east'];for(const n of clone.children)if(cut.includes(n.userData.frontWingSide))n.visible=false;
+      floor.add(clone);frontWingMasks.set(root,{clone,saved});
+    }
+    function restoreRearWingMask(root){
+      const m=rearWingMasks.get(root);if(!m)return;for(const[n,v]of m.saved)n.visible=v;m.clone.removeFromParent();m.clone.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.name==='后厢查看封口')o.material.dispose();});rearWingMasks.delete(root);
+    }
+    function showRearWing(root){
+      root.getObjectByName('后厢_木门')?.traverse(o=>{if(o.userData.kind==='door_leaf')o.rotation.y=state.doorsOpen?1.5:0;});HOUSE.refreshHouseDoorHandles(root);root.updateMatrixWorld(true);
+      const clone=REAR_WING.createRearWingInspection(THREE,root),saved=[],floor=root.getObjectByName('L0_一楼');
+      for(const n of floor.children)if(n.name!=='后厢_furniture'){saved.push([n,n.visible]);n.visible=false;}
+      const cut=active==='bathstorage'?['south','west']:active==='rearwingreverse'?['north','west']:['south','east'];for(const n of clone.children)if(cut.includes(n.userData.rearWingSide))n.visible=false;
+      floor.add(clone);rearWingMasks.set(root,{clone,saved});
+    }
+    function restoreMiddleWingMask(root){
+      const m=middleWingMasks.get(root);if(!m)return;for(const[n,v]of m.saved)n.visible=v;m.clone.removeFromParent();m.clone.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.name==='中厢查看封口')o.material.dispose();});middleWingMasks.delete(root);
+    }
+    function showMiddleWing(root){
+      root.getObjectByName('中厢_木门')?.traverse(o=>{if(o.userData.kind==='door_leaf')o.rotation.y=state.doorsOpen?1.5:0;});HOUSE.refreshHouseDoorHandles(root);root.updateMatrixWorld(true);
+      const clone=MIDDLE_WING.createMiddleWingInspection(THREE,root),saved=[],floor=root.getObjectByName('L0_一楼');
+      for(const n of floor.children)if(n.name!=='中厢_furniture'){saved.push([n,n.visible]);n.visible=false;}
+      const cut=active==='middlewingreverse'?['south','east']:['north','west'];for(const n of clone.children)if(cut.includes(n.userData.middleWingSide))n.visible=false;
+      floor.add(clone);middleWingMasks.set(root,{clone,saved});
+    }
+    function restoreRearMask(root){
+      const m=rearMasks.get(root);if(!m)return;for(const[n,v]of m.saved)n.visible=v;m.clone.removeFromParent();m.clone.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.name==='后井查看剖面封口')o.material.dispose();});rearMasks.delete(root);
+    }
+    function showRear(root){
+      for(const name of ['厨房_前木门','后厢_木门'])root.getObjectByName(name)?.traverse(o=>{if(o.userData.kind==='door_leaf')o.rotation.y=state.doorsOpen?(o.userData.hinge==='right'?-1:1)*1.5:0;});
+      HOUSE.refreshHouseDoorHandles(root);root.updateMatrixWorld(true);const clone=REAR_COURTYARD.createRearCourtyardInspection(THREE,root),saved=[],floor=root.getObjectByName('L0_一楼');
+      for(const n of floor.children){saved.push([n,n.visible]);n.visible=false;}
+      const cut=active==='rearreverse'?['north','west']:['south','east'];for(const n of clone.children)if(cut.includes(n.userData.rearSide))n.visible=false;
+      floor.add(clone);rearMasks.set(root,{clone,saved});
+    }
+    function restoreCourtyardMask(root){
+      const m=courtyardMasks.get(root);if(!m)return;for(const[n,v]of m.saved)n.visible=v;m.clone.removeFromParent();m.clone.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.name==='天井查看剖面封口')o.material.dispose();});courtyardMasks.delete(root);
+    }
+    function showCourtyard(root){
+      for(const name of ['石库门_双扇黑漆门','客堂_六扇落地隔扇'])root.getObjectByName(name)?.traverse(o=>{if(o.userData.kind==='door_leaf')o.rotation.y=state.doorsOpen?(o.userData.hinge==='right'?-1:1)*1.5:0;});
+      HOUSE.refreshHouseDoorHandles(root);root.updateMatrixWorld(true);const clone=COURTYARD.createCourtyardInspection(THREE,root),saved=[],floor=root.getObjectByName('L0_一楼');
+      for(const n of floor.children){saved.push([n,n.visible]);n.visible=false;}
+      const cut=active==='courtyardreverse'?['north','west']:['south','east'];for(const n of clone.children)if(cut.includes(n.userData.courtyardSide))n.visible=false;
+      floor.add(clone);courtyardMasks.set(root,{clone,saved});
+    }
+    function restoreHallMask(root){
+      const m=hallMasks.get(root);if(!m)return;for(const[n,v]of m.saved)n.visible=v;m.clone.removeFromParent();m.clone.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.name==='查看剖面_封口')o.material.dispose();});hallMasks.delete(root);
+    }
+    function showHall(root){
+      // Inspection poses close the front door fully, while whole-house views
+      // keep the pre-existing resting angles.
+      for(const name of ['客堂_六扇落地隔扇','前厢_木门','中厢_木门'])root.getObjectByName(name)?.traverse(o=>{if(o.userData.kind==='door_leaf')o.rotation.y=state.doorsOpen?(o.userData.hinge==='right'?-1:1)*1.5:0;});
+      HOUSE.refreshHouseDoorHandles(root);root.updateMatrixWorld(true);const clone=HALL.createHallInspection(THREE,root),saved=[],floor=root.getObjectByName('L0_一楼');
+      for(const n of floor.children)if(n.name!=='客堂_furniture'){saved.push([n,n.visible]);n.visible=false;}
+      const cut=['hallreverse','hallcoat'].includes(active)?['north','east']:['south','west'];for(const n of clone.children)if(cut.includes(n.userData.hallSide))n.visible=false;
+      floor.add(clone);hallMasks.set(root,{clone,saved});
+    }
+    function restoreKitchenMask(root){const saved=kitchenMasks.get(root);if(saved){for(const[n,v]of saved)n.visible=v;kitchenMasks.delete(root);}}
+    function showKitchen(root){
+      const saved=[],keep=new Set(['厨房','西_外墙_厨房','已确认厨房_fixtures']);
+      const floor=root.getObjectByName('L0_一楼');
+      for(const n of floor.children)if(!keep.has(n.name)){saved.push([n,n.visible]);n.visible=false;}
+      const south=root.getObjectByName('南_厨房前墙');if(south){saved.push([south,south.visible]);south.visible=false;}
+      // Retain the approved east finish and cabinet as context without its shared wall.
+      kitchenMasks.set(root,saved);
+    }
+    function showRearKitchenDoor(root){
+      const saved=[],floor=root.getObjectByName('L0_一楼');
+      for(const n of floor.children)if(n.name!=='厨房'){saved.push([n,n.visible]);n.visible=false;}
+      const kitchen=root.getObjectByName('厨房');
+      for(const n of kitchen.children)if(!['北_厨房后弄墙','厨房_地砖'].includes(n.name)){saved.push([n,n.visible]);n.visible=false;}
+      kitchenMasks.set(root,saved);
+    }
+    function showKitchenDoor(root){
+      const saved=[],floor=root.getObjectByName('L0_一楼');for(const n of floor.children)if(n.name!=='厨房'){saved.push([n,n.visible]);n.visible=false;}
+      const kitchen=root.getObjectByName('厨房');for(const n of kitchen.children)if(!['南_厨房前墙','厨房_地砖'].includes(n.name)){saved.push([n,n.visible]);n.visible=false;}
+      // A local inspection pose; ordinary house views restore the original resting angle.
+      const door=root.getObjectByName('厨房_前木门');door?.traverse(o=>{if(o.userData.kind==='door_leaf')o.rotation.y=state.doorsOpen?1.5:0;});HOUSE.refreshHouseDoorHandles(root);root.updateMatrixWorld(true);kitchenMasks.set(root,saved);
+    }
+    function restoreInspectionRoof(root){
+      const saved=roofMasks.get(root);if(!saved)return;
+      for(const [node,visible]of saved)node.visible=visible;
+      roofMasks.delete(root);
+    }
+    function showDormerWithoutRoof(root){
+      const roof=root.children.find(o=>o.userData.floor==='roof');if(!roof)return;
+      const dormers=[],ancestors=new Set();
+      roof.traverse(o=>{if(o.userData.kind==='v3-dormer')dormers.push(o);});
+      if(!dormers.length)return;
+      for(const dormer of dormers)for(let p=dormer;p&&p!==root;p=p.parent)ancestors.add(p);
+      const saved=[],dormerSet=new Set(dormers);
+      function walk(node){
+        saved.push([node,node.visible]);node.visible=ancestors.has(node);
+        if(node.visible&&!dormerSet.has(node))for(const child of node.children)walk(child);
+      }
+      walk(roof);roofMasks.set(root,saved);
+    }
+    function syncViewCaption(){
+      const p=houseRecords.get(selectedId);
+      $('view-name').textContent=active==='block'?presets.block.name:selectedId+' · '+presets[active].name;
+      $('scene-subtitle').textContent=state.context?'十户住宅 · 三排里弄 · 实体砖瓦木窗':p.number+'号 · '+(p.type==='A'?'单开间':'双开间单厢')+' · 前后天井';
+      document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===active));openActiveGroup();
+      window.__V3_STATUS.preset=active;
+    }
+    function seedBathingRest(root){root.traverse(o=>{if(!['bathing_lid','bathing_bail'].includes(o.userData.kind))return;o.userData.bathingRestPosition=o.position.toArray();o.userData.bathingRestQuaternion=o.quaternion.toArray();});}
+    function updateBathing(root,lift,raised){root.traverse(o=>{const u=o.userData;if(!u.bathingRestPosition)return;o.position.fromArray(u.bathingRestPosition);o.quaternion.fromArray(u.bathingRestQuaternion);if(u.kind==='bathing_lid'&&lift)o.position.y+=.16;if(u.kind==='bathing_bail'&&raised&&!lift)o.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI*.8));});root.updateMatrixWorld(true);}
+    function applyNow(patch,options={}){
+      if(patch.bathingOpen)patch.bathingRaised=false;if(patch.bathingRaised)patch.bathingOpen=false;
+      const lightingOnly=Object.keys(patch).every(k=>['lighting','stairLights','lamps','lampPreset'].includes(k));
+      const previousContext=state.context;Object.assign(state,patch,{houseId:selectedId});
+      if(state.floors!=='all'){state.roof=false;state.context=false;}
+      if(state.context&&(!state.roof||state.cut||state.doorsOpen||state.windowsOpen||state.labels))state.context=false;
+      const reframe=previousContext!==state.context&&options.reframe!==false;
+      if(reframe){
+        if(state.context)active=active==='block'?'block':'exterior';
+        else if(active==='block'||active==='exterior')active='hero';
+      }
+      if(!lightingOnly){
+      for(const root of houseCache.values()){restoreInspectionRoof(root);restoreKitchenMask(root);restoreHallMask(root);restoreCourtyardMask(root);restoreRearMask(root);restoreFrontWingMask(root);restoreRearWingMask(root);restoreMiddleWingMask(root);restoreStairwellMask(root);restoreTingziMask(root);restoreMaritalMask(root);restoreLoungeMask(root);restoreChildRoomMask(root);restoreStorageMask(root);restoreAtticRoomMask(root);restoreAtticStorageMask(root);root.visible=false;}
+      HOUSE.setShikumenRoofJoins(hero,{west:state.context,east:false});
+      if(state.context){
+        hero.visible=true;HOUSE.setShikumenView(hero,{floors:'all',roof:true,cut:false,doorsOpen:false,windowsOpen:false});
+      }else{
+        selectedRoot.visible=true;
+        HOUSE.setShikumenView(selectedRoot,{floors:state.floors,roof:state.roof,cut:state.cut,doorsOpen:state.doorsOpen,windowsOpen:state.windowsOpen,cabinetOpen:state.cabinetOpen});
+        // Retain the courtyard partition when inspecting the furnished hall in the full floor.
+        if(['hallhouse','courtyardhouse','rearhouse','frontwinghouse','rearwinghouse','middlewinghouse'].includes(active)&&state.floors==='ground'&&selectedId==='B1'){
+          const front=selectedRoot.getObjectByName('南_客堂木立面');
+          if(front){front.getObjectByName('完整墙体').visible=true;const low=front.getObjectByName('剖切墙体');if(low)low.visible=false;}
+        }
+        if(ATTIC_STORAGE_VIEWS.includes(active)&&selectedId==='B1')showAtticStorage(selectedRoot);
+        if(['atticroom','atticroomreverse','atticroomlamp','atticroomlanding','atticroomtable'].includes(active)&&state.floors==='second'&&selectedId==='B1')showAtticRoom(selectedRoot);
+        if(['storage','storagereverse','storagechest','storagelamp'].includes(active)&&state.floors==='second'&&selectedId==='B1')showStorage(selectedRoot);
+        if(['childroom','childreverse','childsheet','childbag','childwindow','childdesk','childlamp','childcord','childbooks','childchest','childpot'].includes(active)&&state.floors==='second'&&selectedId==='B1')showChildRoom(selectedRoot);
+        if(['lounge','loungeflowers','loungereverse','loungedoor'].includes(active)&&state.floors==='second'&&selectedId==='B1')showLounge(selectedRoot);
+        if(['marital','maritalvanity','maritalwatch','maritalwatchface','maritaltv','maritalpower','maritalpot','maritalreverse'].includes(active)&&state.floors==='second'&&selectedId==='B1')showMarital(selectedRoot);
+        if(STAIRWELL_VIEWS.includes(active)&&selectedId==='B1')showStairwell(selectedRoot);
+        if(['mezzanine','tingzireverse','tingzipot','tingzipower'].includes(active)&&state.floors==='mezzanine'&&selectedId==='B1')showTingzi(selectedRoot);
+        if(active==='tingzireverse'&&state.floors==='mezzanine'&&selectedId!=='B1'){const half=selectedRoot.getObjectByName('L1H_亭子间半层'),original=[];for(const n of half.children)if(['北_亭子间后弄墙','西_外墙_亭子间','后附屋_落水管'].includes(n.name)){original.push([n,n.visible]);n.visible=false;}const inspect=new THREE.Group();selectedRoot.add(inspect);tingziMasks.set(selectedRoot,{original,inspect});}
+        if(active==='tingzibridge'&&state.floors==='mezzanine')selectedRoot.getObjectByName('L0_一楼').visible=true;
+        if(state.floors==='attic'&&!ATTIC_STORAGE_VIEWS.includes(active))showDormerWithoutRoof(selectedRoot);
+        if(['kitchen','kitchenkeys','kitchenrice','kitchensink','kitchengas','kitchensnack','kitchensnacktop','kitchencondiments','kitchentoothpaste'].includes(active)&&state.floors==='ground')showKitchen(selectedRoot);
+        if(active==='kitchendoor'&&state.floors==='ground')showKitchenDoor(selectedRoot);
+        if(['rearlockinner','rearlockouter','rearlockdoor'].includes(active)&&state.floors==='ground'&&selectedId==='B1')showRearKitchenDoor(selectedRoot);
+        if(['hall','hallreverse','hallcabinet','halltea','hallpower','hallphone','hallcoat'].includes(active)&&state.floors==='ground'&&selectedId==='B1')showHall(selectedRoot);
+        if(['courtyard','courtyardreverse'].includes(active)&&state.floors==='ground'&&selectedId==='B1')showCourtyard(selectedRoot);
+        if(['middlewing','middlewingreverse','middlecup','middlecard','middlepower'].includes(active)&&state.floors==='ground'&&selectedId==='B1')showMiddleWing(selectedRoot);
+        if(['rearwing','rearwingreverse','bathstorage'].includes(active)&&state.floors==='ground'&&selectedId==='B1')showRearWing(selectedRoot);
+        if(['frontwing','frontwingreverse','doorbolt','doorhandleinner','doorhandleouter','frontclock','frontpot'].includes(active)&&state.floors==='ground'&&selectedId==='B1')showFrontWing(selectedRoot);
+        if(['rearwell','rearreverse'].includes(active)&&state.floors==='ground'&&selectedId==='B1')showRear(selectedRoot);
+      }
+      }
+      hero.traverse(o=>{if(o.userData.kind!=='rice_lid')return;if(!o.userData.riceRest)o.userData.riceRest=o.position.toArray();o.position.fromArray(o.userData.riceRest);if(state.riceOpen&&!state.context&&selectedId==='B1')o.position.y+=.23;});
+      if(selectedRoot!==hero)selectedRoot.updateMatrixWorld(true);hero.updateMatrixWorld(true);
+      updateBathing(hero,!state.context&&selectedId==='B1'&&state.bathingOpen,!state.context&&selectedId==='B1'&&state.bathingRaised);
+      neighbours.visible=state.context;base.visible=soloPaving.visible=!state.context&&!ATTIC_STORAGE_VIEWS.includes(active)&&!['atticroom','atticroomreverse','atticroomlamp','atticroomlanding','atticroomtable','childroom','childreverse','childsheet','childbag','childwindow','childdesk','childlamp','childcord','childbooks','childchest','childpot','storage','storagereverse','storagechest','storagelamp','lounge','loungeflowers','loungereverse','loungedoor','marital','maritalvanity','maritalwatch','maritalwatchface','maritaltv','maritalpower','maritalpot','maritalreverse','mezzanine','tingzireverse','tingzipot','tingzipower','stairwell','stairwellreverse','stairstorage','stairlamps','middlewing','middlewingreverse','middlecup','middlecard','middlepower','rearwing','rearwingreverse','bathstorage','frontwing','frontwingreverse','doorbolt','doorhandleinner','doorhandleouter','frontclock','frontpot','hall','hallreverse','hallcabinet','halltea','hallpower','hallphone','hallcoat','courtyard','courtyardreverse','rearwell','rearreverse'].includes(active);scene.overrideMaterial=state.clay?clay:null;
+      const p=houseRecords.get(selectedId),centerX=selectedRoot.position.x+p.width/2;
+      base.position.x=centerX;
+      soloPaving.position.x=centerX-heroCenterX;
+      $('roof').checked=ATTIC_STORAGE_VIEWS.includes(active)?!state.loftRoof:!state.roof;$('cut').checked=state.cut;$('context').checked=state.context;
+      $('rice-lid').checked=state.riceOpen;let shownRice=false;selectedRoot.traverseVisible(o=>{if(o.userData.kind==='rice_lid')shownRice=true;});$('rice-lid-row').hidden=selectedId!=='B1'||state.context||!shownRice;
+      $('bathing-lid').checked=state.bathingOpen;$('bathing-bail').checked=state.bathingRaised;
+      let shownLid=false,shownBail=false;selectedRoot.traverseVisible(o=>{if(o.userData.kind==='bathing_lid')shownLid=true;if(o.userData.kind==='bathing_bail')shownBail=true;});
+      $('bathing-lid-row').hidden=selectedId!=='B1'||state.context||!shownLid;$('bathing-bail-row').hidden=selectedId!=='B1'||state.context||!shownBail;
+      $('cabinet').checked=state.cabinetOpen;$('cabinet-row').hidden=selectedId!=='B1';
+      $('doors').checked=state.doorsOpen;$('windows').checked=state.windowsOpen;$('label-switch').checked=state.labels;$('clay').checked=state.clay;
+      const stairCloseup=selectedId==='B1'&&!state.context&&STAIRWELL_VIEWS.includes(active);
+      const nightAllowed=selectedId==='B1'&&!state.context;
+      if(state.lighting==='night'&&!nightAllowed)state.lighting='dusk';
+      $('stair-night').hidden=!nightAllowed;
+      const nightHouse=nightAllowed&&state.lighting==='night';
+      const dusk=state.lighting==='dusk';fill.intensity=.6;fill.position.set(16,12,-12);fill.target.position.set(0,0,0);
+
+      scene.background.setHex(dusk?0xe7dfce:0xe3e6df);hemi.intensity=dusk?1.28:1.65;
+      sun.color.setHex(dusk?0xffd5a3:0xfff5dc);sun.intensity=dusk?3:2.5;
+      const lightPositions=!state.context&&p.type==='A'?lightPositionsA:lightPositionsB;
+      lights.forEach((l,i)=>{l.position.set(...lightPositions[i]);l.intensity=dusk?12:0;});
+      const entranceCloseup=!state.context&&['gatebolts','gatebar','gatetopbolt','gatebottombolt','gate','doors','hardware','threshold','relief','frontage'].includes(active);
+      const kitchenCloseup=!state.context&&['kitchen','kitchenkeys','kitchenrice','kitchensink','kitchengas','kitchensnack','kitchensnacktop','kitchencondiments','kitchentoothpaste','kitchendoor','rearlockinner','rearlockouter','rearlockdoor'].includes(active);
+      const windowCloseup=!state.context&&['windows','windhook','upperwindows','hallwindows','dormerwindow'].includes(active);
+      const hallCloseup=!state.context&&['hall','hallreverse','hallcabinet','halltea','hallpower','hallphone','hallcoat'].includes(active);
+      const courtyardCloseup=!state.context&&['courtyard','courtyardreverse'].includes(active);
+      const middleWingCloseup=!state.context&&['middlewing','middlewingreverse','middlecup','middlecard','middlepower'].includes(active);
+      const rearWingCloseup=!state.context&&['rearwing','rearwingreverse','bathstorage'].includes(active);
+      const frontWingCloseup=!state.context&&['frontwing','frontwingreverse','doorbolt','doorhandleinner','doorhandleouter','frontclock','frontpot'].includes(active);
+      const rearCloseup=!state.context&&['rearwell','rearreverse'].includes(active);
+      const maritalCloseup=!state.context&&['marital','maritalvanity','maritalwatch','maritalwatchface','maritaltv','maritalpower','maritalpot','maritalreverse'].includes(active);
+      const loungeCloseup=!state.context&&['lounge','loungeflowers','loungereverse','loungedoor'].includes(active);
+      const storageCloseup=!state.context&&['storage','storagereverse','storagechest','storagelamp'].includes(active);
+      const childRoomCloseup=!state.context&&['childroom','childreverse','childsheet','childbag','childwindow','childdesk','childlamp','childcord','childbooks','childchest','childpot'].includes(active);
+      const atticRoomCloseup=!state.context&&['atticroom','atticroomreverse','atticroomlamp','atticroomlanding','atticroomtable'].includes(active);
+      const atticStorageCloseup=!state.context&&ATTIC_STORAGE_VIEWS.includes(active);
+      const radius=atticStorageCloseup?6:atticRoomCloseup?5:childRoomCloseup?5:storageCloseup?3.6:loungeCloseup?5:maritalCloseup?5:state.floors==='mezzanine'?5:middleWingCloseup?5:rearWingCloseup?5:frontWingCloseup?5:rearCloseup?3.5:active==='block'?44:state.context?30:courtyardCloseup?4:hallCloseup?5:kitchenCloseup?4:windowCloseup?3:entranceCloseup?5:16;
+      Object.assign(sun.shadow.camera,{left:-radius,right:radius,top:radius,bottom:-radius});sun.shadow.camera.updateProjectionMatrix();
+      const world=p.worldPosition;
+      sun.target.position.set(active==='block'?-2:state.context?world[0]+p.width/2:centerX,1,active==='block'?-20:state.context?world[2]-8:-8);
+      if(entranceCloseup)sun.target.position.set(0,1.8,0);
+      sun.position.set(sun.target.position.x-22,29,sun.target.position.z+24);
+      if(kitchenCloseup){sun.target.position.fromArray(presets[active].target);sun.position.copy(sun.target.position).add(new THREE.Vector3(-4,active==='kitchendoor'?5:8,['kitchendoor','rearlockouter'].includes(active)?-6:5));}
+      if(['rearlockinner','rearlockdoor'].includes(active)){sun.position.copy(sun.target.position).add(new THREE.Vector3(3,4,5));}
+      if(hallCloseup){sun.target.position.set(0,1,-5.4);sun.position.set(-5,9,1);hemi.intensity=dusk?1.15:1.4;sun.intensity=dusk?2.6:2.2;}
+      if(courtyardCloseup){sun.target.position.set(0,1.2,-1.6);sun.position.set(3,10,3);hemi.intensity=dusk?1.2:1.55;sun.intensity=dusk?2.6:2.3;}
+      if(middleWingCloseup){sun.target.position.set(3.45,1,-7.71);sun.position.set(...(active==='middlewingreverse'?[8,9,0]:[-3,9,-15]));hemi.intensity=dusk?1.25:1.55;sun.intensity=dusk?2.6:2.3;}
+      if(rearWingCloseup){sun.target.position.set(3.45,1,-12.5);sun.position.set(...(active==='rearwingreverse'?[-3,9,-19]:[7,9,-7]));hemi.intensity=dusk?1.25:1.55;sun.intensity=dusk?2.6:2.3;}
+      if(storageCloseup){sun.target.position.set(-.51,5,-7.4);sun.position.copy(sun.target.position).add(new THREE.Vector3(...(['storagereverse','storagelamp'].includes(active)?[-5,8,-5]:[5,8,5])));hemi.intensity=dusk?1.20:1.50;sun.intensity=dusk?2.2:2.1;}
+      if(childRoomCloseup){sun.target.position.set(3.45,5,-12.75);sun.position.copy(sun.target.position).add(new THREE.Vector3(...(active==='childreverse'?[5,8,-5]:[-5,8,5])));hemi.intensity=dusk?1.25:1.55;sun.intensity=dusk?2.6:2.3;}
+      if(loungeCloseup){sun.target.position.set(.36,5,-4.9);sun.position.copy(sun.target.position).add(new THREE.Vector3(...(active==='loungereverse'?[5,8,-5]:active==='loungedoor'?[-5,8,5]:[5,8,5])));hemi.intensity=dusk?1.25:1.55;sun.intensity=dusk?2.6:2.3;}
+      if(atticStorageCloseup){sun.target.position.set(1.56,7,-6.8);sun.position.copy(sun.target.position).add(new THREE.Vector3(-5,9,7));hemi.intensity=2.05;sun.intensity=2.8;fill.intensity=.65;}
+      if(atticRoomCloseup){sun.target.position.set(3.45,5,-7.85);sun.position.copy(sun.target.position).add(new THREE.Vector3(...(active==='atticroomreverse'?[5,8,-5]:[-5,8,5])));hemi.intensity=dusk?1.25:1.55;sun.intensity=dusk?2.6:2.3;}
+      if(maritalCloseup){sun.target.position.set(3.45,5,-2.7);sun.position.copy(sun.target.position).add(new THREE.Vector3(...(active==='maritalreverse'?[5,8,-5]:[-5,8,5])));hemi.intensity=dusk?1.25:1.55;sun.intensity=dusk?2.6:2.3;}
+      if(frontWingCloseup){sun.target.position.set(3.45,1,-2.7);sun.position.set(...(active==='frontwingreverse'?[-3,9,-9]:[7,9,3]));hemi.intensity=dusk?1.25:1.55;sun.intensity=dusk?2.6:2.3;}
+      if(['gatebolts','gatebar','gatetopbolt','gatebottombolt','doorbolt'].includes(active)){
+        sun.target.position.fromArray(presets[active].target);sun.position.copy(sun.target.position).add(new THREE.Vector3(...(active==='doorbolt'?[6,9,-3]:[-2,10,-3])));sun.intensity=3.0;hemi.intensity=1.8;fill.intensity=1.2;fill.target.position.copy(sun.target.position);fill.position.copy(sun.target.position).add(new THREE.Vector3(...(active==='doorbolt'?[3,1,1]:[1,2,-3])));
+      }
+      if(STAIRWELL_VIEWS.includes(active)){sun.target.position.set(0,2.4,-9.2);sun.position.set(...(active==='stairwellreverse'?[5,10,-16]:[-5,10,-3]));hemi.intensity=1.65;sun.intensity=2.1;}
+      if(state.floors==='mezzanine'){sun.target.position.fromArray(presets[active].target).add(focusOffset(active));sun.position.copy(sun.target.position).add(new THREE.Vector3(...(active==='tingzireverse'?[-4,8,-5]:[4,8,5])));hemi.intensity=dusk?1.25:1.55;sun.intensity=dusk?2.4:2.1;}
+      if(rearCloseup){sun.target.position.set(.15,1,-11.25);sun.position.set(...(active==='rearreverse'?[-4,9,-16]:[3,9,-7]));hemi.intensity=dusk?1.2:1.55;sun.intensity=dusk?2.6:2.3;}
+      if(windowCloseup){
+        const target=p.type==='A'&&['windows','windhook','upperwindows'].includes(active)?[0,5.4,-2.975]:presets[active].target;
+        sun.target.position.fromArray(target).add(focusOffset(active));
+        const north=p.type==='B'&&['windows','windhook'].includes(active);
+        sun.position.copy(sun.target.position).add(new THREE.Vector3(-6,8,north?-10:10));
+      }
+      const stairOn=nightHouse?!!state.lamps.stair:state.stairLights;
+      const lampStates=STAIRWELL_PROPS.getStairwellLighting(THREE,hero,stairOn&&!state.clay);
+      const visibleLampCount=lampStates.filter(l=>l.present&&hero.visible).length;
+      // Performance: point-light shadows (6 scene passes each) and glass transmission (a second full scene pass)
+      // only in room close-ups, where the inspected scene is small. Whole-house, floor and street views skip both.
+      const inspecting=!state.context&&[kitchenMasks,hallMasks,courtyardMasks,rearMasks,frontWingMasks,rearWingMasks,middleWingMasks,stairwellMasks,tingziMasks,maritalMasks,loungeMasks,childRoomMasks,storageMasks,atticRoomMasks,atticStorageMasks].some(m=>m.has(selectedRoot));
+      lampShadowsAllowed=inspecting;setTransmissionQuality(inspecting);
+      stairLights.forEach((l,i)=>{const info=lampStates[i];l.position.fromArray(info.position);l.intensity=info.visible?info.energy:0;l.visible=hero.visible&&info.present;l.castShadow=inspecting;});
+      $('stair-lights-row').hidden=nightHouse||selectedId!=='B1'||state.context||!stairCloseup&&visibleLampCount===0;
+      $('stair-lights').checked=state.stairLights;
+      if(nightHouse){hemi.intensity=atticStorageCloseup?.20:.045;sun.intensity=atticStorageCloseup?.07:0;fill.intensity=atticStorageCloseup?.09:0;lights.forEach(l=>l.intensity=0);scene.background.setHex(0x141916);}
+      // Whole-house night: each lamp's light points follow its visible fixture; switches are per lamp.
+      // Curtains: hidden on cut walls in room close-ups and in every whole-house section view; sheers glow a little by day.
+      window.__V3_STATUS.houseCurtains=HOUSE_CURTAINS.applyHouseCurtains(THREE,hero,{active,cut:state.cut,lighting:nightHouse?'night':state.lighting==='night'?'dusk':state.lighting});
+      // Wall items (calendars, frames, certificates): same rules as the curtains, without the glow.
+      window.__V3_STATUS.houseServices=HOUSE_SERVICES.applyHouseServices(THREE,hero,{active,cut:state.cut});
+      window.__V3_STATUS.wallDecor=HOUSE_WALL_DECOR.applyWallDecor(THREE,hero,{active,cut:state.cut});
+      houseLampStates=HOUSE_LIGHTING.getHouseLighting(THREE,hero,nightHouse&&!state.clay?state.lamps:{}).concat(ATTIC_ROOM.getAtticRoomLighting(THREE,hero,nightHouse&&!state.clay&&!!state.lamps.atticRoom)).concat(ATTIC_STORAGE.getAtticStorageLighting(THREE,hero,nightHouse&&!state.clay&&!!state.lamps.atticStorage));
+      // One light per lamp (tube and multi-arm points merged), plus the stair and storage lamps, compete for the night slots.
+      nightActive=nightHouse&&hero.visible;const merged=new Map();
+      for(const info of houseLampStates){if(!info.visible)continue;const m=merged.get(info.lamp)||{sum:new THREE.Vector3(),n:0,energy:0,color:info.color};m.sum.add(new THREE.Vector3().fromArray(info.position));m.n++;m.energy+=info.energy;merged.set(info.lamp,m);}
+      // Priority 0 = each room's main lamp; 1 = desk/bedside lamps and the second and third stair lamp.
+      const ACCENT=new Set(['middleDesk','childDesk','maritalBedside']);
+      nightCandidates=[...merged.entries()].map(([id,m])=>({id,position:m.sum.divideScalar(m.n),color:m.color,energy:m.n>1?m.energy*.85:m.energy,priority:ACCENT.has(id)?1:0}));
+      if(nightHouse){const t=controls.target,stair=lampStates.filter(info=>info.visible).map(info=>({position:new THREE.Vector3().fromArray(info.position),color:'#ffc080',energy:info.energy})).sort((a,b)=>a.position.distanceTo(t)-b.position.distanceTo(t));stair.forEach((c,i)=>nightCandidates.push({...c,priority:i?1:0}));}
+      stairLights.forEach(l=>{if(nightHouse)l.visible=false;});lights.forEach(l=>{l.visible=!nightHouse;});
+      // The storage room's own light is hidden at night, so check whether its fixture branch is shown rather than the light itself.
+      hero.traverse(o=>{if(!(nightHouse&&o.isPointLight&&o.name==='储藏间吊灯照明'&&state.lamps.storage&&!state.clay))return;let shown=true;for(let q=o.parent;q;q=q.parent)if(!q.visible){shown=false;break;}if(shown)nightCandidates.push({position:o.getWorldPosition(new THREE.Vector3()),color:'#ffc78a',energy:16,priority:0});});
+      hero.traverse(o=>{if(o.isPointLight&&o.name==='储藏间吊灯照明'){o.visible=!nightHouse;o.intensity=2.8;}if(o.isMesh&&o.material?.name==='钨丝_暖色微光_储藏间v1')o.material.emissiveIntensity=nightHouse&&!state.lamps.storage?0:1.8;});
+      // Televisions follow the night lamp chips; each lit, shown set adds one faint bluish light to the night slots and starts the picture ticking.
+      const tvStates=HOUSE_TV_SCREENS.getTvScreens(THREE,hero,nightHouse&&!state.clay?state.lamps:{});
+      for(const tv of tvStates)if(tv.visible&&hero.visible)nightCandidates.push({id:tv.id,position:new THREE.Vector3().fromArray(tv.position),color:tv.color,energy:tv.energy,priority:1});
+      tvAnimating=hero.visible&&tvStates.some(tv=>tv.visible);if(tvAnimating)HOUSE_TV_SCREENS.tickTvScreens(hero,performance.now()/1000);
+      window.__V3_STATUS.tvScreens={on:tvStates.filter(tv=>tv.visible).map(tv=>tv.id),present:tvStates.filter(tv=>tv.present).map(tv=>tv.id),animating:tvAnimating};
+      refreshLampShadows();
+      $('lamp-row').hidden=!nightHouse;document.querySelectorAll('[data-lamp]').forEach(b=>b.classList.toggle('on',!!state.lamps[b.dataset.lamp]));document.querySelectorAll('[data-lamp-preset]').forEach(b=>b.classList.toggle('active',b.dataset.lampPreset===state.lampPreset));
+      STAIRWELL_PROPS.setStairwellBicycleReflections(THREE,hero,state.clay?0:state.lighting==='night'?(stairOn?.13:.015):1);
+      window.__V3_STATUS.stairwellLighting={enabled:stairOn,visibleLamps:lampStates.filter(l=>l.visible&&hero.visible).map(l=>l.id),night:nightHouse};
+      window.__V3_STATUS.houseLighting={night:nightHouse,preset:state.lampPreset,on:Object.keys(state.lamps).filter(k=>state.lamps[k]),visibleLights:houseLampStates.filter(l=>l.visible&&hero.visible).map(l=>l.id),litSlots:houseLampLights.filter(l=>l.visible&&l.intensity>0).length,shadowLights:houseLampLights.filter(l=>l.visible&&l.castShadow).length,removed:hero.userData.houseLighting?.removed||[]};
+      document.querySelectorAll('[data-floor]').forEach(b=>b.classList.toggle('active',b.dataset.floor===state.floors));
+      document.querySelectorAll('[data-light]').forEach(b=>b.classList.toggle('active',b.dataset.light===state.lighting));
+      $('floor-note').textContent=state.floors==='ground'?'从前天井进入客堂，再经后梯通向上层。':
+        state.floors==='mezzanine'?'亭子间地坪 +2.40 米；移开上层，单独查看房间与门外小桥。':
+        state.floors==='second'?'亭子间 +2.40；主屋二层 +4.00；晒台 +4.80。':
+        ATTIC_STORAGE_VIEWS.includes(active)?'已确认的阁楼陈设；箱包沿边摆放，保留梯口、通口与窗前空间。':state.floors==='attic'?'沿二层木梯上行，查看梯孔、护栏与窗前平台。瓦面已移开，保留老虎窗。':
+        '主屋两层，后附屋错层；每户都有局部阁层和一处老虎窗。';
+      $('status').textContent=state.clay?'素模观察：砖瓦与门窗细部仍保留。':
+        ATTIC_STORAGE_VIEWS.includes(active)?'阁楼 · 可旋转近看，并切换窗扇、木箱与灯光。':state.floors==='attic'?'阁层视角 · 可继续旋转查看木梯、梯孔和屋窗。':
+        state.cut?'墙体已剖开，便于查看室内。':'';
+      if(reframe)framePreset(active);
+      refreshMaritalMirror();syncViewCaption();window.__V3_STATUS.state={...state};
+      renderer.shadowMap.needsUpdate=true;dirty=true;
+    }
+    // Side panel: grouped, collapsible views with search; rooms without any available view are hidden.
+    function syncViewGroups(){
+      const q=($('view-search')?.value||'').trim();let any=false;
+      document.querySelectorAll('.view-group').forEach(g=>{let groupAny=false;
+        g.querySelectorAll('.view-room, :scope > .views').forEach(r=>{let n=0;r.querySelectorAll('[data-view]').forEach(b=>{const hit=!q||(b.dataset.search||b.textContent).includes(q);b.style.display=hit?'':'none';if(hit&&!b.hidden)n++;});if(r.classList.contains('view-room'))r.hidden=n===0;if(n)groupAny=true;});
+        g.hidden=!groupAny;if(q&&groupAny)g.open=true;if(groupAny)any=true;});
+      const note=$('view-search-note');if(note)note.hidden=any;
+    }
+    function openActiveGroup(){const g=document.querySelector(`.view-group [data-view="${active}"]`)?.closest('details');if(g&&!g.open)g.open=true;}
+    function refreshLampShadows(){
+      // Nearest lit lamps fill the fixed slots; in close-ups the first three slots always cast shadows (constant shader variant).
+      // Whole-house views: 12 slots, no shadows (every room's main lamp lit). Close-ups: 4 slots, nearest 3 cast shadows; fewer lights keep first-visit shader compiles short.
+      const n=lampShadowsAllowed?CLOSEUP_SLOTS:NIGHT_SLOTS,t=controls.target,ranked=nightCandidates.map(c=>({c,d:c.position.distanceTo(t)})).sort((a,b)=>(a.c.priority||0)-(b.c.priority||0)||a.d-b.d).slice(0,n).sort((a,b)=>a.d-b.d);let changed=false;
+      houseLampLights.forEach((l,i)=>{const r=ranked[i];l.visible=nightActive&&i<n;if(r){l.position.copy(r.c.position);l.color.set(r.c.color);l.intensity=r.c.energy;const wallBulb=r.c.id==='atticRoom'||r.c.id?.startsWith('atticStorage');l.shadow.bias=wallBulb?-.001:-.0002;l.shadow.normalBias=wallBulb?.012:.002;}else{l.intensity=0;}const want=nightActive&&lampShadowsAllowed&&i<3;if(l.castShadow!==want){l.castShadow=want;changed=true;}if(r&&want)changed=true;});
+      if(changed)renderer.shadowMap.needsUpdate=true;dirty=true;
+    }
+    // Small glass parts (bulbs, perfume bottle) use transmission only in close-ups; elsewhere a plain transparent stand-in
+    // avoids three.js re-rendering every opaque object into the transmission buffer each frame.
+    function setTransmissionQuality(full){
+      hero.traverse(o=>{if(!o.isMesh)return;for(const m of Array.isArray(o.material)?o.material:[o.material])if(m&&(m.transmission>0||transmissive.has(m))&&!transmissive.has(m))transmissive.set(m,{transmission:m.transmission,opacity:m.opacity,transparent:m.transparent,depthWrite:m.depthWrite});});
+      for(const[m,o]of transmissive){const detailed=full&&m.userData.asset!=='attic-storage-20261113',want=detailed?o.transmission:0;if(m.transmission===want)continue;m.transmission=want;m.transparent=detailed?o.transparent:true;m.opacity=detailed?o.opacity:Math.min(o.opacity,m.userData.asset==='attic-storage-20261113'?.20:.22);m.depthWrite=detailed?o.depthWrite:false;m.needsUpdate=true;}
+    }
+    function roomsForView(key){
+      if(['block','exterior'].includes(key))return [];
+      const groups=[[/^(kitchen|rearlock)/,'kitchen'],[/^(hall)/,'hall'],[/^(courtyard|gate|door|hardware|relief|threshold)/,'courtyard'],[/^(rearwell|rearreverse)/,'rear-courtyard'],[/^(frontwing|frontclock|frontpot)/,'front-wing'],[/^(rearwing|bathstorage)/,'rear-wing'],[/^(middlewing|middlecup|middlecard|middlepower)/,'middle-wing'],[/^(stairwell|stairstorage|stairlamps)/,'stairwell-props'],[/^(mezzanine|tingzi)/,'tingzijian'],[/^(marital)/,'marital'],[/^(lounge)/,'lounge'],[/^(child)/,'child-room'],[/^(storage)/,'storage'],[/^(atticroom)/,'attic-room'],[/^(loft)/,'attic-storage'],[/^(terrace)/,'terrace']];
+      if(key.endsWith('house')||['hero','ground','second','section','attic'].includes(key))return allRooms;
+      if(['doorbolt','doorhandleinner','doorhandleouter'].includes(key))return ['front-wing'];
+      return groups.find(([re])=>re.test(key))?.slice(1)||allRooms;
+    }
+    let viewSerial=0,roomQueue=Promise.resolve(),builtRooms=new Set(streetSnapshot?[]:rooms);
+    const restoreMasks=[restoreInspectionRoof,restoreKitchenMask,restoreHallMask,restoreCourtyardMask,restoreRearMask,restoreFrontWingMask,restoreRearWingMask,restoreMiddleWingMask,restoreStairwellMask,restoreTingziMask,restoreMaritalMask,restoreLoungeMask,restoreChildRoomMask,restoreStorageMask,restoreAtticRoomMask,restoreAtticStorageMask];
+    async function ensureRooms(required){
+      if(selectedId!=='B1'||required.every(r=>builtRooms.has(r)))return;
+      const work=async()=>{
+        if(required.every(r=>builtRooms.has(r)))return;
+        const t0=performance.now();window.__V3_STATUS.roomLoading=true;
+        $('house-note').textContent='正在载入房间陈设…';$('house-select').setAttribute('aria-busy','true');
+        try{
+          await prepareRooms(required);await wait();
+          const next=await HOUSE.buildShikumenAsync({onProgress:(i,n)=>{$('house-note').textContent='正在装入房间陈设 '+Math.round(i/n*100)+'%…';},id:'B1',type:'B',number:'27',materials,detail:'hero',interior:true,attic:true,dormer:true,partyWest:false,partyEast:false,name:'石库门_V3.2_B1_27号_双开间单厢端户'});
+          next.userData.id='B1';seedBathingRest(next);const previous=hero;
+          for(const restore of restoreMasks)restore(previous);
+          scene.add(next);hero=next;houseCache.set('B1',next);if(selectedId==='B1')selectedRoot=next;
+          roofPreviews[1]=heroPreview();visibleMaritalMirrors=[];disposeEvictedHouse(previous);
+          builtRooms=new Set(rooms);window.__V3_STATUS.fast=runtimeStatus();window.__V3_STATUS.lastRoomLoadMs=performance.now()-t0;
+          rebuildLabels();updateHouseDetails();
+        }finally{window.__V3_STATUS.roomLoading=false;$('house-select').removeAttribute('aria-busy');}
+      };
+      const task=roomQueue.then(work);roomQueue=task.catch(()=>{});return task;
+    }
+    let streetDetailPromise;
+    function restoreRebuiltLampShadows(root){
+      // Legacy room loading rebuilt these lamps after setTransmissionQuality had changed
+      // cached glass materials. Reproduce their factory flags without rebuilding rooms.
+      root.traverse(o=>{
+        const m=o.material;if(!o.isMesh||!m||Array.isArray(m)||!transmissive.has(m))return;
+        const data=m.userData||{};
+        if(!data.houseLightingRevision&&!data.stairwellPropsRevision&&!data.atticStorageRevision)return;
+        o.receiveShadow=!(m.transmission>0);
+        o.castShadow=data.houseLightingRevision?!(m.transmission>0||/^(钨丝|日光灯管_荧光粉白|透光_|透明白炽灯|灯泡玻璃芯柱|灯泡内部细支架)/.test(m.name)):!(m.transmission>0);
+        for(let p=o;p;p=p.parent){
+          if(p.userData.houseLampId==='atticStorage'&&/玻璃|钨丝|灯泡内部细支架/.test(m.name))o.castShadow=false;
+          if(p.userData.houseLampId==='atticRoom'&&(m.transmission>0||/玻璃|钨丝|支架/.test(m.name)))o.castShadow=false;
+          if(p===root)break;
+        }
+      });
+    }
+    function ensureStreetDetail(){
+      if(!neighbours.userData.fastStreetSnapshot)return Promise.resolve();
+      if(streetDetailPromise)return streetDetailPromise;
+      streetDetailPromise=(async()=>{
+        window.__V3_STATUS.streetDetailLoading=true;
+        try{
+          const t0=performance.now(),next=await (await import('./street-runtime.js')).loadStreet('near');
+          const previousNeighbours=neighbours;neighbours=next.neighbours;scene.add(neighbours);
+          roofPreviews[0]=neighbourPreview();
+          // A room may have completed while the snapshot was downloading. Keep that furnished hero.
+          if(hero.userData.fastStreetSnapshot){
+            const previous=hero;for(const restore of restoreMasks)restore(previous);
+            hero=next.hero;seedBathingRest(hero);scene.add(hero);houseCache.set('B1',hero);
+            if(selectedId==='B1')selectedRoot=hero;
+            roofPreviews[1]=heroPreview();visibleMaritalMirrors=[];disposeEvictedHouse(previous);
+            rebuildLabels();updateHouseDetails();
+          }else {restoreRebuiltLampShadows(hero);disposeEvictedHouse(next.hero);}
+          disposeEvictedHouse(previousNeighbours);
+          window.__V3_STATUS.streetSnapshotLevel='near';window.__V3_STATUS.lastStreetDetailMs=performance.now()-t0;
+          applyNow({...state}, {reframe:false});dirty=true;
+        }finally{window.__V3_STATUS.streetDetailLoading=false;streetDetailPromise=null;}
+      })();return streetDetailPromise;
+    }
+    function apply(patch,options={}){
+      const expose=selectedId==='B1'&&(active==='block'||active==='exterior')&&Object.entries(patch).some(([k,v])=>['cut','doorsOpen','windowsOpen','labels'].includes(k)&&v||k==='roof'&&!v||k==='context'&&!v);
+      if(expose&&!allRooms.every(r=>builtRooms.has(r)))return ensureRooms(allRooms).then(()=>applyNow(patch,options));
+      return applyNow(patch,options);
+    }
+    async function setPreset(key){
+      const serial=++viewSerial;
+      try{await ensureRooms(roomsForView(key));if(serial!==viewSerial)return false;return setPreparedPreset(key);}
+      catch(e){console.error(e);window.__V3_STATUS.errors.push(e.stack||String(e));$('house-note').textContent='房间暂未载入，请再点一次重试。';throw e;}
+    }
+    function setPreparedPreset(key){
+      if(!presets[key])throw new Error('Unknown view: '+key);
+      active=key;applyNow({windowsOpen:false,cabinetOpen:false,riceOpen:false,bathingOpen:false,bathingRaised:false,...presets[key].state},{reframe:false});framePreset(key);refreshLampShadows();
+      if(innerWidth<761)$('panel').classList.remove('open');
+    }
+    function disposeEvictedHouse(root){
+      restoreInspectionRoof(root);scene.remove(root);
+      const retainedGeometry=new Set(),retainedMaterial=new Set();
+      scene.traverse(o=>{
+        if(o.geometry)retainedGeometry.add(o.geometry);
+        for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[])retainedMaterial.add(m);
+      });
+      const geometry=new Set(),material=new Set();
+      root.traverse(o=>{
+        if(o.geometry)geometry.add(o.geometry);
+        for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[])material.add(m);
+      });
+      for(const g of geometry)if(!retainedGeometry.has(g))g.dispose();
+      for(const m of material)if(!retainedMaterial.has(m))m.dispose();
+      root.clear();
+    }
+    function trimHouseCache(){
+      while(houseCache.size>3){
+        const id=[...houseCache.keys()].find(k=>k!=='B1'&&k!==selectedId);
+        const root=houseCache.get(id);houseCache.delete(id);disposeEvictedHouse(root);
+      }
+    }
+    async function selectHouse(id,options={}){
+      if(!houseRecords.has(id))throw new Error('Unknown house: '+id);
+      const request=++selectionSerial;
+      window.__V3_STATUS.selection={requested:id,loading:true};$('house-select').setAttribute('aria-busy','true');
+      $('house-select').value=id;$('house-note').textContent='正在打开 '+id+' · '+houseRecords.get(id).number+'号…';
+      $('house-note').classList.remove('error');
+      try{
+        let root=houseCache.get(id);
+        if(!root){
+          await wait();if(request!==selectionSerial)return false;
+          const p=houseRecords.get(id);
+          await prepareRooms();
+          root=HOUSE.buildShikumen({id,type:p.type,number:p.number,detail:'hero',interior:true,attic:true,dormer:true,materials,
+            weatherSeed:p.weatherSeed??(p.type==='A'?37:61),partyWest:false,partyEast:false,name:'石库门_V3.2_'+id+'_'+p.number+'号'});
+          root.userData.id=id;root.visible=false;scene.add(root);houseCache.set(id,root);
+        }else{houseCache.delete(id);houseCache.set(id,root);}
+        if(request!==selectionSerial)return false;
+        selectedId=id;selectedRoot=root;trimHouseCache();rebuildLabels();updateHouseDetails();
+        const key=options.preset||(active==='block'||active==='exterior'||(id!=='B1'&&['terrace','terracebridge','tingzibridge','terracereverse','terracehardware','tingzipot','tingzipower','childroom','childreverse','childhouse','childsheet','childbag','childwindow','childdesk','childlamp','childcord','childbooks','childchest','childpot','storage','storagereverse','storagehouse','storagechest','storagelamp','lounge','loungeflowers','loungereverse','loungedoor','loungehouse','marital','maritalvanity','maritalwatch','maritalwatchface','maritaltv','maritalpower','maritalpot','maritalreverse','maritalhouse','stairwell','stairwellreverse','stairstorage','stairlamps','middlewing','middlewingreverse','middlecup','middlecard','middlepower','middlewinghouse','rearwing','rearwingreverse','bathstorage','rearwinghouse','frontwing','frontwingreverse','doorbolt','doorhandleinner','doorhandleouter','frontclock','frontpot','frontwinghouse','rearwell','rearreverse','rearhouse','courtyard','courtyardreverse','courtyardhouse','hall','hallreverse','hallhouse','hallcabinet','halltea','hallpower','hallphone','hallcoat','kitchen','kitchenkeys','kitchenrice','kitchensink','kitchengas','kitchensnack','kitchensnacktop','kitchencondiments','kitchentoothpaste','kitchenhouse','kitchendoor','rearlockinner','rearlockouter','rearlockdoor'].includes(active))?'hero':active);
+        await setPreset(key);
+        window.__V3_STATUS.selection={requested:id,loading:false};
+        return root;
+      }catch(e){
+        console.error(e);window.__V3_STATUS.errors.push(e.stack||String(e));
+        if(request===selectionSerial){
+          $('house-select').value=selectedId;$('house-note').textContent='这户暂时未能打开，请重新选择。';
+          $('house-note').classList.add('error');window.__V3_STATUS.selection={requested:id,loading:false,error:e.message};
+        }
+        return false;
+      }finally{
+        if(request===selectionSerial)$('house-select').setAttribute('aria-busy','false');
+      }
+    }
+    document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>setPreset(b.dataset.view));
+    $('view-search').oninput=syncViewGroups;
+    document.querySelectorAll('[data-floor]').forEach(b=>b.onclick=()=>setPreset(b.dataset.floor==='all'?'hero':b.dataset.floor));
+    document.querySelectorAll('[data-light]').forEach(b=>b.onclick=()=>apply({lighting:b.dataset.light}));
+    $('lamp-chips').innerHTML=LAMP_CHIPS.map(([id,label])=>`<button data-lamp="${id}">${label}</button>`).join('');
+    document.querySelectorAll('[data-lamp]').forEach(b=>b.onclick=()=>apply({lamps:{...state.lamps,[b.dataset.lamp]:!state.lamps[b.dataset.lamp]},lampPreset:'custom'}));
+    document.querySelectorAll('[data-lamp-preset]').forEach(b=>b.onclick=()=>apply({lamps:{...LAMP_PRESETS[b.dataset.lampPreset]},lampPreset:b.dataset.lampPreset}));
+    controls.addEventListener('end',refreshLampShadows);
+    $('house-select').onchange=e=>{selectHouse(e.target.value);};
+    $('context').onchange=e=>setPreset(e.target.checked?'exterior':'hero');
+    $('roof').onchange=e=>{if(ATTIC_STORAGE_VIEWS.includes(active)){apply({loftRoof:!e.target.checked});return;}
+      if(!e.target.checked&&state.floors!=='all')setPreset('roof');
+      else apply({roof:!e.target.checked});
+    };
+    for(const [id,key]of [['cut','cut'],['doors','doorsOpen'],['windows','windowsOpen'],['cabinet','cabinetOpen'],['rice-lid','riceOpen'],['bathing-lid','bathingOpen'],['bathing-bail','bathingRaised'],['label-switch','labels'],['clay','clay'],['stair-lights','stairLights']])$(id).onchange=e=>apply({[key]:e.target.checked});
+    $('mobile').onclick=()=>$('panel').classList.toggle('open');window.addEventListener('resize',resize);
+    rebuildLabels();updateHouseDetails();
+    const params=new URLSearchParams(location.search),initial=presets[params.get('view')]?params.get('view'):'block';
+    await setPreset(initial);
+    if(houseRecords.has(params.get('house'))&&params.get('house')!=='B1'){
+      const opened=await selectHouse(params.get('house'),{preset:params.has('view')?initial:'hero'});
+      if(!opened)throw new Error('未能打开指定住宅。');
+    }
+    if(['day','dusk','night'].includes(params.get('light')))apply({lighting:params.get('light')});
+    if(LAMP_PRESETS[params.get('lamps')])apply({lamps:{...LAMP_PRESETS[params.get('lamps')]},lampPreset:params.get('lamps')});
+    let externalRendering=false;
+    function setExternalRendering(on){externalRendering=!!on;if(!on)dirty=true;}
+    const gameReflectionFrustum=new THREE.Frustum(),gameReflectionMatrix=new THREE.Matrix4();
+    function updateGameReflections(viewCamera){
+      if(!externalRendering||!visibleMaritalMirrors.length)return;
+      scene.updateMatrixWorld(true);viewCamera.updateMatrixWorld(true);
+      gameReflectionFrustum.setFromProjectionMatrix(gameReflectionMatrix.multiplyMatrices(viewCamera.projectionMatrix,viewCamera.matrixWorldInverse));
+      for(const reflection of visibleMaritalMirrors){
+        const mesh=reflection.gameMesh;if(!mesh||mesh.material!==reflection.gameMaterial)continue;
+        let visible=true;for(let p=mesh;p;p=p.parent)if(!p.visible){visible=false;break;}
+        if(visible&&gameReflectionFrustum.intersectsObject(mesh))reflection.update(renderer,scene,viewCamera);
+      }
+    }
+    const labelPoint=new THREE.Vector3();
+    function draw(){
+      requestAnimationFrame(draw);if(tvAnimating){const now=performance.now();if(now-tvLastTick>=83){tvLastTick=now;if(HOUSE_TV_SCREENS.tickTvScreens(hero,now/1000))dirty=true;}}if(externalRendering)return;if(!dirty)return;dirty=false;updateRoofPreview();for(const r of visibleMaritalMirrors)r.update(renderer,scene,camera);renderer.render(scene,camera);frame++;
+      for(const {room,e}of labels){
+        let on=state.labels&&!state.roof&&!state.context&&(state.floors==='all'?true:
+          state.floors==='ground'?room.floor===0:state.floors==='mezzanine'?room.floor===1:state.floors==='attic'?room.floor===3||/上阁|阁梯/.test(room.name):room.floor>=1&&room.floor<=2);
+        if(on){
+          const [a,b]=room.bounds;labelPoint.set((a[0]+b[0])/2,a[1]+.16,(a[2]+b[2])/2);selectedRoot.localToWorld(labelPoint).project(camera);
+          on=Math.abs(labelPoint.x)<.96&&Math.abs(labelPoint.y)<.96;
+          e.style.left=(labelPoint.x*.5+.5)*width+'px';e.style.top=(-labelPoint.y*.5+.5)*height+'px';
+        }
+        e.style.display=on?'block':'none';
+      }
+      const visibleHeight=camera.isPerspectiveCamera?2*camera.position.distanceTo(controls.target)*Math.tan(THREE.MathUtils.degToRad(camera.fov/2))/camera.zoom:span/camera.zoom;
+      const scaleMetres=visibleHeight<2?.1:2;
+      $('scale').style.width=(scaleMetres*height/visibleHeight)+'px';
+      $('scale').nextSibling.textContent=scaleMetres===.1?' 10厘米':' 2米';
+      const d=camera.position.clone().sub(controls.target);$('compass').style.display='block';
+      $('compass').style.transform='rotate('+Math.atan2(d.x,d.z)+'rad)';
+      window.__V3_STATUS.render={calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,frame};
+    }
+    $('boot').hidden=true;window.__V3_STATUS.ready=true;window.__V3_STATUS.fast=runtimeStatus();
+    // Warm the night shader variants in the background (parallel shader compile), so the first switch to night
+    // and the first night close-up do not stall. Light flags are restored immediately after programs are created.
+    setTimeout(async()=>{
+      if(hero.userData.fastStreetSnapshot||hero.userData.fastStreetDetailSnapshot||!renderer.compile||nightActive)return;window.__V3_STATUS.nightWarmup='running';const t0=performance.now();
+      for(const [slots,shadows] of [[NIGHT_SLOTS,0],[CLOSEUP_SLOTS,3]]){
+        const saved=[],set=(o,v,k='visible')=>{saved.push([o,k,o[k]]);o[k]=v;};
+        houseLampLights.forEach((l,i)=>{set(l,i<slots);set(l,i<shadows,'castShadow');});stairLights.forEach(l=>set(l,false));lights.forEach(l=>set(l,false));
+        hero.traverse(o=>{if(o.isPointLight&&o.name==='储藏间吊灯照明')set(o,false);});
+        // compile() creates the programs (the driver links them in parallel); we do not use compileAsync's readiness polling, because it
+        // throws 'isReady of undefined' when a view switch disposes a material while it is still polling (seen 2026-11-14).
+        try{renderer.compile(scene,camera);}finally{for(const[o,k,v]of saved.reverse())o[k]=v;}
+        await new Promise(r=>setTimeout(r,0));
+      }
+      window.__V3_STATUS.nightWarmup={done:true,ms:Math.round(performance.now()-t0)};
+    },1500);
+    window.__V3_STATUS.model={hero:hero.userData,neighbourhood:neighbours.userData};
+    window.__V3_TEST={setPreset,apply,selectHouse,getSelectedHouse:()=>selectedRoot,houseCache,
+      houseCatalogue:houseOrder.map(id=>houseRecords.get(id)),presets,scene,get hero(){return hero;},get neighbours(){return neighbours;},camera,controls,renderer,ensureStreetDetail,setExternalRendering,updateGameReflections};
+    draw();
+  }catch(e){
+    console.error(e);window.__V3_STATUS.errors.push(e.stack||String(e));
+    $('boot').querySelector('.spinner').style.display='none';$('boot').querySelector('h2').textContent='暂时无法显示三维场景';
+    $('progress').textContent='请用桌面版 Chrome 或 Edge 打开本文件。错误：'+e.message;
+  }
+})();
+</script></body></html>

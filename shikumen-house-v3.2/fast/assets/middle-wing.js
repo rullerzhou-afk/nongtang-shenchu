@@ -1,0 +1,64 @@
+import {readBytes as FAST_BYTES,moduleEnabled as FAST_ENABLED,rooms as FAST_ROOMS,roomOf as FAST_ROOM} from '../data-runtime.js';
+import { sliceGeometry } from './courtyard.js';
+import { MIDDLE_WING_DATA } from './middle-wing-data.js';
+
+const caches=new WeakMap(),installations=new WeakMap();
+function cache(THREE){
+ if(caches.has(THREE))return caches.get(THREE);
+ const d=MIDDLE_WING_DATA,geometries=[],materials=new Map(),textures=new Map();
+ const arrays={5120:Int8Array,5121:Uint8Array,5122:Int16Array,5123:Uint16Array,5125:Uint32Array,5126:Float32Array};
+ function attribute(a){const raw=FAST_BYTES(a);return new THREE.BufferAttribute(new arrays[a.type](raw.buffer),a.size,!!a.normalized);}
+ function geometry(i){if(geometries[i])return geometries[i];const s=d.geometries[i],g=new THREE.BufferGeometry(),names={POSITION:'position',NORMAL:'normal',TEXCOORD_0:'uv',COLOR_0:'color',TANGENT:'tangent'};for(const[k,a]of Object.entries(s.attributes))g.setAttribute(names[k],attribute(a));if(s.indices)g.setIndex(attribute(s.indices));g.computeBoundingSphere();return geometries[i]=g;}
+ function texture(i,color=false){const key=i+':'+color;if(textures.has(key))return textures.get(key);const def=d.textures[i],im=d.images[def.source],sam=d.samplers[def.sampler]||{};const t=new THREE.TextureLoader().load(new URL(im.url,import.meta.url).href,()=>{window.dispatchEvent(new Event('shikumen-asset-ready'));});t.flipY=false;t.colorSpace=color?THREE.SRGBColorSpace:THREE.NoColorSpace;t.wrapS=sam.wrapS===33071?THREE.ClampToEdgeWrapping:THREE.RepeatWrapping;t.wrapT=sam.wrapT===33071?THREE.ClampToEdgeWrapping:THREE.RepeatWrapping;t.anisotropy=4;textures.set(key,t);return t;}
+ function material(i,colored=false){const key=i+':'+colored;if(materials.has(key))return materials.get(key);const s=d.materials[i],p=s.pbrMetallicRoughness||{},f=p.baseColorFactor||[1,1,1,1];const m=new THREE.MeshStandardMaterial({name:s.name+'_中厢v1',color:new THREE.Color().setRGB(...f.slice(0,3)),opacity:f[3],transparent:s.alphaMode==='BLEND',alphaTest:s.alphaMode==='MASK'?(s.alphaCutoff??.5):0,side:s.doubleSided?THREE.DoubleSide:THREE.FrontSide,roughness:p.roughnessFactor??1,metalness:p.metallicFactor??0,vertexColors:colored});m.userData={asset:d.assetId,middleWingMaterial:i,middleWingRevision:1};if(typeof document!=='undefined'){if(p.baseColorTexture)m.map=texture(p.baseColorTexture.index,true);if(p.metallicRoughnessTexture)m.roughnessMap=m.metalnessMap=texture(p.metallicRoughnessTexture.index);if(s.normalTexture){m.normalMap=texture(s.normalTexture.index);m.normalScale.setScalar(s.normalTexture.scale??1);}}if(s.emissiveFactor)m.emissive.fromArray(s.emissiveFactor);if(s.alphaMode==='BLEND')m.depthWrite=false;materials.set(key,m);return m;}
+ function node(s){const o=new THREE.Group();o.name=s.name;o.userData={...s.extras};if(s.matrix)new THREE.Matrix4().fromArray(s.matrix).decompose(o.position,o.quaternion,o.scale);else{if(s.translation)o.position.fromArray(s.translation);if(s.rotation)o.quaternion.fromArray(s.rotation);if(s.scale)o.scale.fromArray(s.scale);}for(const p of s.primitives||[]){const g=geometry(p.geometry),m=new THREE.Mesh(g,material(p.material,!!g.attributes.color));m.name=s.name+'_表面';m.userData={middleWingRevision:1};m.castShadow=true;m.receiveShadow=true;o.add(m);}for(const ch of s.children||[])o.add(node(ch));return o;}
+ const c={material,part:name=>{const g=new THREE.Group();g.name='中厢_'+name;g.position.set(4.02,.1,-5.28);g.userData={middleWingRevision:1,part:name};for(const n of d.parts[name]||[])g.add(node(n));return g;}};caches.set(THREE,c);return c;
+}
+
+function worldUV(THREE,g,matrix,domain,side){const p=g.attributes.position,n=g.attributes.normal,uv=new Float32Array(p.count*2),q=new THREE.Vector3(),normal=new THREE.Vector3(),nm=new THREE.Matrix3().getNormalMatrix(matrix);for(let i=0;i<p.count;i++){q.fromBufferAttribute(p,i).applyMatrix4(matrix);if(n)normal.fromBufferAttribute(n,i).applyMatrix3(nm);const x=q.x-4.02,y=-q.z-5.28,z=q.y-.1;let u=side==='floor'?x:side==='west'||side==='east'?y:x,v=side==='floor'?y:z;if(side!=='floor'&&Math.abs(normal.y)>.7)v+=side==='west'||side==='east'?q.x-(side==='west'?4.02:6.96):q.z-(side==='north'?-10.14:-5.28);uv[i*2]=(u-domain[0])/(domain[1]-domain[0]);uv[i*2+1]=1-(v-domain[2])/(domain[3]-domain[2]);}g.setAttribute('uv',new THREE.BufferAttribute(uv,2));g.deleteAttribute('color');}
+
+
+function middlePartition(root,side){return root.getObjectsByProperty('name','厢房_一楼分隔')[side==='south'?0:1];}
+function middleWindows(root){return [root.getObjectsByProperty('name','东厢_临主弄木窗').find(o=>Math.abs(o.position.z+6.9)<.01)];}
+function ageArchitecture(THREE,root,c){
+ root.updateMatrixWorld(true);const inv=root.matrixWorld.clone().invert(),audit=[];
+ const sides=[['south','middle-partition',[{axis:2,value:-5.279,sign:-1}]],['north','middle-partition',[{axis:2,value:-10.141,sign:1}]],['west','中隔墙_一楼',[{axis:2,value:-10.14,sign:1},{axis:2,value:-5.28,sign:-1},{axis:0,value:4.019,sign:1}]],['east','东_厢房承重墙_一楼',[{axis:2,value:-10.14,sign:1},{axis:2,value:-5.28,sign:-1},{axis:0,value:6.961,sign:-1}]]];
+ for(const[side,name,planes]of sides){const group=name==='middle-partition'?middlePartition(root,side):root.getObjectByName(name),meshes=[];group.traverse(o=>{if(o.isMesh&&!Array.isArray(o.material)&&o.material.name.includes('内墙_旧石灰灰泥'))meshes.push(o);});const slot=MIDDLE_WING_DATA.surfaceSlots['plaster-'+side];for(const o of meshes){const transform=inv.clone().multiply(o.matrixWorld),s=sliceGeometry(THREE,o.geometry,transform,planes);if(!s.inside)continue;worldUV(THREE,s.inside,transform,slot.domain,side);const aged=new THREE.Mesh(s.inside,c.material(slot.material));aged.name=o.name+'_中厢饰面';aged.position.copy(o.position);aged.quaternion.copy(o.quaternion);aged.scale.copy(o.scale);aged.castShadow=o.castShadow;aged.receiveShadow=true;aged.userData={middleWingRevision:1,middleWingSurface:side};o.parent.add(aged);if(s.outside)o.geometry=s.outside;else o.removeFromParent();audit.push({side,name:o.name,insideVertices:s.inside.attributes.position.count,outsideVertices:s.outside?.attributes.position.count||0});}}
+
+ const floor=root.getObjectByName('中厢_地面'),inst=floor.children.find(o=>o.isInstancedMesh);if(inst){
+ const arr={},slot=MIDDLE_WING_DATA.surfaceSlots['floor-ceramic'],world=inv.clone().multiply(inst.matrixWorld);
+ for(let i=0;i<inst.count;i++){const t=new THREE.Matrix4();inst.getMatrixAt(i,t);let g=inst.geometry.clone().applyMatrix4(t);if(g.index)g=g.toNonIndexed();worldUV(THREE,g,world,slot.domain,'floor');for(const[k,a]of Object.entries(g.attributes)){if(!arr[k])arr[k]=[];for(const v of a.array)arr[k].push(v);}}
+ const g=new THREE.BufferGeometry();for(const[k,a]of Object.entries(arr))g.setAttribute(k,new THREE.Float32BufferAttribute(a,k==='uv'?2:inst.geometry.attributes[k]?.itemSize||3));g.computeBoundingSphere();const m=new THREE.Mesh(g,c.material(slot.material));m.name='中厢_原30cm红陶砖_做旧';m.position.copy(inst.position);m.quaternion.copy(inst.quaternion);m.scale.copy(inst.scale);m.castShadow=m.receiveShadow=true;m.userData={middleWingRevision:1,middleWingSurface:'floor',originalGridRetained:true};floor.add(m);inst.removeFromParent();audit.push({side:'floor',instancesChanged:inst.count});}
+ audit.push(...ageWood(THREE,root,c));return audit;
+}
+function ageWood(THREE,root,c){const audit=[];
+ for(const group of middleWindows(root)){
+  const name=group.name;group.traverse(o=>{if(!o.isMesh||o.material?.userData.category!=='aged_dark_wood')return;const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone(),p=g.attributes.position,n=g.attributes.normal,count=p.count/3,parents=Array.from({length:count},(_,i)=>i),vertices=new Map();const find=i=>{while(parents[i]!==i){parents[i]=parents[parents[i]];i=parents[i];}return i;};for(let t=0;t<count;t++)for(let j=0;j<3;j++){const i=t*3+j,key=[p.getX(i),p.getY(i),p.getZ(i)].map(v=>Math.round(v*1e6)).join(',');if(vertices.has(key))parents[find(t)]=find(vertices.get(key));else vertices.set(key,t);}const pieces=new Map(),v=new THREE.Vector3();for(let t=0;t<count;t++){const k=find(t);if(!pieces.has(k))pieces.set(k,new THREE.Box3());for(let j=0;j<3;j++)pieces.get(k).expandByPoint(v.fromBufferAttribute(p,t*3+j));}const uv=new Float32Array(p.count*2);for(let i=0;i<p.count;i++){const box=pieces.get(find(Math.floor(i/3))),size=box.getSize(new THREE.Vector3()).toArray(),long=size.indexOf(Math.max(...size)),q=[p.getX(i),p.getY(i),p.getZ(i)],nn=[Math.abs(n.getX(i)),Math.abs(n.getY(i)),Math.abs(n.getZ(i))],normal=nn.indexOf(Math.max(...nn));let across=[0,1,2].find(a=>a!==long&&a!==normal);if(across===undefined)across=(long+1)%3;const along=normal===long?(long+2)%3:long;uv[i*2]=(q[across]-box.min.getComponent(across))/.5+(find(Math.floor(i/3))%7)*.137;uv[i*2+1]=1-(q[along]-box.min.getComponent(along))/1.5;}g.setAttribute('uv',new THREE.BufferAttribute(uv,2));g.deleteAttribute('color');o.geometry=g;o.material=c.material(MIDDLE_WING_DATA.surfaceSlots['joinery-wood'].material);o.userData={...o.userData,middleWingRevision:1,middleWingSurface:'joinery',timberComponents:pieces.size};audit.push({side:'joinery',name,mesh:o.name,timberComponents:pieces.size,vertices:p.count});});
+ }
+return audit;}
+
+
+function seatBookcaseDoors(furniture){
+ const cabinet=furniture.getObjectByName('西墙窄书柜');
+ if(!cabinet)return; // The street preview deliberately omits room furniture.
+ // Keep the door, glass, handle and both halves of each hinge aligned.
+ for(const o of cabinet.children)if(o.userData.kind==='middle_wing_cabinet_leaf'||o.name.startsWith('合页固定叶片'))o.position.z-=.008;
+ cabinet.userData.doorSeat={revision:'20261117',inset:.008,closedGap:.00145};
+}
+export function installMiddleWing(THREE,root){if(!FAST_ENABLED("middle-wing"))return;const c=cache(THREE),furniture=c.part('furniture');seatBookcaseDoors(furniture);root.getObjectByName('L0_一楼').add(furniture);const audit=ageArchitecture(THREE,root,c);installations.set(root,{furniture});root.userData.middleWing={revision:1,userVisualAccepted:false,origin:[4.02,.1,-5.28],size:[2.94,4.86],assetId:MIDDLE_WING_DATA.assetId,materialAudit:audit};root.userData.textureCount=(root.userData.textureCount||0)+MIDDLE_WING_DATA.images.length;}
+export function setMiddleWingCabinetOpening(root,degrees=0){const f=installations.get(root)?.furniture;if(!f)return;const a=Math.max(0,Math.min(90,degrees))*Math.PI/180;f.traverse(o=>{if(o.userData.kind==='middle_wing_cabinet_leaf')o.rotation.y=(o.userData.openingSign||1)*a;});root.updateMatrixWorld(true);}
+export function createMiddleWingInspection(THREE,root){
+ root.updateMatrixWorld(true);const inv=root.matrixWorld.clone().invert(),out=new THREE.Group();out.name='中厢查看建筑';out.userData={middleWingInspection:true};
+ function clone(o,planes){
+  if(!o.visible)return null;if(o.name==='中厢_木门'||(o.name==='东厢_临主弄木窗'&&Math.abs(o.position.z+6.9)<.01))planes=[];let c;
+  if(o.isInstancedMesh){c=new THREE.Group();const im=new THREE.Matrix4(),col=new THREE.Color();for(let i=0;i<o.count;i++){o.getMatrixAt(i,im);const g=o.geometry.clone().applyMatrix4(im),t=inv.clone().multiply(o.matrixWorld),part=sliceGeometry(THREE,g,t,planes).inside;if(!part)continue;const mat=o.material.clone();if(o.instanceColor){o.getColorAt(i,col);mat.color.multiply(col);}const child=new THREE.Mesh(part,mat);child.name=o.name+'_'+i;child.castShadow=child.receiveShadow=true;c.add(child);}}
+  else if(o.isMesh){const t=inv.clone().multiply(o.matrixWorld),g=sliceGeometry(THREE,o.geometry,t,planes).inside;if(!g)return null;c=new THREE.Mesh(g,o.material);c.castShadow=o.castShadow;c.receiveShadow=o.receiveShadow;}
+  else c=new THREE.Group();c.name=o.name;c.position.copy(o.position);c.quaternion.copy(o.quaternion);c.scale.copy(o.scale);c.userData={...o.userData,middleWingInspection:true};for(const ch of o.children){const a=clone(ch,planes);if(a)c.add(a);}return c;
+ }
+
+ for(const[side,original]of[['floor',root.getObjectByName('中厢_地面')],['south',middlePartition(root,'south')],['north',middlePartition(root,'north')],['west',root.getObjectByName('中隔墙_一楼')],['east',root.getObjectByName('东_厢房承重墙_一楼')]]){
+ const planes=[{axis:0,value:3.82,sign:1},{axis:0,value:7.32,sign:-1},{axis:2,value:-10.26,sign:1},{axis:2,value:-5.16,sign:-1},{axis:1,value:3.7,sign:-1}];const g=clone(original,planes);if(!g)continue;inv.clone().multiply(original.matrixWorld).decompose(g.position,g.quaternion,g.scale);g.userData.middleWingSide=side;out.add(g);
+ const mat=new THREE.MeshStandardMaterial({name:'中厢查看封口',color:0xb7ad98,roughness:1});const cap=(p,d)=>{const q=new THREE.Mesh(new THREE.BoxGeometry(...d),mat);q.name='中厢查看封口';q.position.fromArray(p);q.userData={middleWingInspection:true,middleWingSide:side};out.add(q);};
+ if(side==='west')cap([3.93,3.7,-7.71],[.18,.002,5.10]);if(side==='east')cap([7.08,3.7,-7.71],[.24,.002,5.10]);if(side==='south')cap([5.49,3.7,-5.22],[2.94,.002,.12]);if(side==='north')cap([5.49,3.7,-10.20],[2.94,.002,.12]);}
+ return out;
+}

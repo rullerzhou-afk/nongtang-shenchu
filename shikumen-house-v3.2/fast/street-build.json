@@ -1,0 +1,27 @@
+{
+  "detail": "far",
+  "rawBytes": 296253824,
+  "packedBytes": 90332643,
+  "jsonBytes": 12111506,
+  "manifestBytes": 0,
+  "payloadBytes": 102444149,
+  "geometryCount": 4763,
+  "images": 515,
+  "roomState": {
+    "rooms": [
+      "courtyard",
+      "rear-courtyard",
+      "terrace",
+      "hall"
+    ],
+    "binaryFiles": 28,
+    "binaryBytes": 144970038
+  },
+  "files": [
+    "street.bin.gz",
+    "street.json"
+  ],
+  "sourceSHA256": "5dee9a59565076060040db61496bc21f2aeb9feb58f8f37f2c75d2f7f005423c",
+  "viewerSHA256": "6fac1a65593556ae2f483e5956246de29e67211b625500428685dd4f6fcec2fb",
+  "codecSHA256": "bafdaf683b4221d938434717d74a5b26ecc6d96df42b03962ec1b986eb23e2d3"
+}
