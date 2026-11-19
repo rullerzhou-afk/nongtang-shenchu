@@ -65,7 +65,7 @@ export default {
         act: (h, d, done) => { if (d.fan) d.fan.on = true; d.stopFanSound = h.sound('fan', { loop: true, volume: .35 }); h.wait(2600, done); },
         card: { hu: '电风扇', zh: '电风扇', note: '一档两档三档，大热天都要靠它。' } },
       // 针线匾：矮柜上的针线笸箩，凑近看
-      { id: 'basket', audio: 'W22', label: '针线匾', sub: '矮柜上搁着针线和叠好的布。', target: '针线笸箩',
+      { id: 'basket', audio: 'W22', label: '针线匾', sub: '矮柜上搁着针线和叠好的布。', target: '针线笸箩', onFurniture: '北墙布料矮柜',
         pose: { pos: [4.05, 1.42, -9.05], look: [4.47, .99, -9.87] },
         act: (h, d, done) => h.wait(1300, done),
         card: { hu: '针线匾', zh: '针线笸箩', note: '针、线、顶针箍、纽扣都放在里面。' } },

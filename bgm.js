@@ -1,18 +1,15 @@
 // 背景音乐 · 曦宝 2026-11-18（鹿鹿：整个游戏需要一首背景音乐，先把管线搭好，她用 Suno 生成后放进来）
-// - 首页尝试自动播放原曲，点“开始”或“走进弄堂”后切换到 bgm-game.mp3。
-// - 原曲在 audio/ 下依次查找 bgm-hum.mp3、bgm.mp3、bgm.m4a、bgm.wav。没有游戏曲时继续播放原曲。
+// - 点“开始”或“走进弄堂”才载入并播放游戏曲；回到首页即停止。
 // - 词卡的录音、屋里的声音一响，音乐自动压低，放完再回来。
 // - 右下角“声音”，点开两根滑条：音乐、音效各调各的（鹿鹿 2026-11-18），拉到 0 就是关。选择记在这台电脑的浏览器里。
 // 靠接管 window.Audio 知道别的声音什么时候在放。
-const FILES = ['bgm-hum.mp3', 'bgm.mp3', 'bgm.m4a', 'bgm.wav'];
-const GAME = 'bgm-game.mp3', MAX = .5, FADE_IN = 2, KEY = 'sound-v1';
+const GAME = 'bgm-game.mp3', MAX = .5, FADE_IN = .65, KEY = 'sound-v1';
 // 两个音量：音乐、音效，都是 0 到 1。默认音乐 0.64（实际响度 0.32）、音效 0.7。记在这台电脑的浏览器里
 const sound = { music: .64, sfx: .7 };
 try { const o = JSON.parse(localStorage.getItem(KEY) || 'null'); if (o) { if (o.music >= 0) sound.music = Math.min(1, +o.music); if (o.sfx >= 0) sound.sfx = Math.min(1, +o.sfx); } else if (localStorage.getItem('bgm-off-v1') === '1') sound.music = 0; } catch (e) {}
 window.__SOUND = sound;   // sfx.js 读这里的 sfx
 const VOL = () => sound.music * MAX, DUCK = () => Math.min(.1, VOL() * .3);
 const state = { el: null, file: null, started: false, get off() { return sound.music <= 0; }, others: new Set(), vol: 0, target: 0 };
-let original = null, game = null, inGame = false, titleReady = document.getElementById('card').classList.contains('on');
 window.__BGM = state;   // 检查脚本读这个
 
 // 别的声音：凡是用 new Audio() 放的（词卡录音、收音机之类），放的时候记一笔
@@ -53,33 +50,14 @@ document.body.append(btn, panel);
 
 function aim() { state.target = !state.started || state.off ? 0 : state.others.size ? DUCK() : VOL(); }
 let last = performance.now();
-function tick(now) {   // 音量慢慢靠过去：淡入两秒，压低和回来各半秒多
+function tick(now) {   // 音乐淡入，播放词卡时轻轻压低音量
   const dt = Math.min(.1, (now - last) / 1000); last = now; requestAnimationFrame(tick); if (!state.el) return;
-  const fadeIn = state.file === GAME ? .65 : FADE_IN;
-  const full = Math.max(.1, VOL()), rate = state.target > state.vol ? full / (state.others.size || state.vol > DUCK() * 1.5 ? .7 : fadeIn) : full / .6;
+  const full = Math.max(.1, VOL()), rate = state.target > state.vol ? full / (state.others.size || state.vol > DUCK() * 1.5 ? .7 : FADE_IN) : full / .6;
   state.vol += Math.max(-rate * dt, Math.min(rate * dt, state.target - state.vol));
   state.el.volume = state.vol;
   if (state.off && state.vol <= .001 && !state.el.paused) state.el.pause();   // 关掉后真的停下来，不白白占着
 }
 requestAnimationFrame(tick);
-
-async function find(files) {
-  for (const file of files) {
-    const url = new URL('./audio/' + file, import.meta.url).href;
-    try {
-      if (!(await fetch(url, { method: 'HEAD' })).ok) continue;
-      const el = new NativeAudio(url);
-      el.loop = true; el.volume = 0; el.preload = 'auto';
-      return { file, el };
-    } catch (e) {}
-  }
-  return null;
-}
-Promise.all([find(FILES), find([GAME])]).then(([titleTrack, gameTrack]) => {
-  original = titleTrack; game = gameTrack;
-  if (!original && !game) { rows.music.r.disabled = true; rows.music.row.style.opacity = '.45'; note.style.display = 'block'; }
-  selectMusic();
-});
 
 function playCurrent() {
   if (state.off || !state.el?.paused) return;
@@ -90,19 +68,19 @@ function playCurrent() {
     if (el === state.el) console.debug('背景音乐未能播放', file, error.name);
   });
 }
-function selectMusic() {
-  if (!titleReady && !inGame) return;
-  const track = (inGame && game) || original;
-  if (state.el !== (track?.el ?? null)) {
-    state.el?.pause();
-    state.el = track?.el ?? null; state.file = track?.file ?? null; state.vol = 0;
-    if (state.el) { state.el.currentTime = 0; state.el.volume = 0; }
-  }
-  state.started = !!state.el; aim(); playCurrent();
-}
-window.addEventListener('shikumen-title', () => { titleReady = true; inGame = false; selectMusic(); });
-window.addEventListener('shikumen-game-start', () => { inGame = true; selectMusic(); });
-// 点击开始会直接切新曲。浏览器拦截首页自动播放时，其他正常点击可解锁原曲。
-window.addEventListener('click', event => {
-  if (!inGame && !event.target.closest?.('#start, #walk-start')) playCurrent();
-}, { capture: true });
+window.addEventListener('shikumen-game-start', () => {
+  if (state.el) return;
+  const audio = new NativeAudio(new URL('./audio/' + GAME, import.meta.url).href);
+  audio.loop = true; audio.volume = 0;
+  audio.addEventListener('error', () => {
+    if (audio !== state.el) return;
+    rows.music.r.disabled = true; rows.music.row.style.opacity = '.45'; note.style.display = 'block';
+  });
+  state.el = audio; state.file = GAME; state.started = true;
+  aim(); playCurrent();
+});
+window.addEventListener('shikumen-title', () => {
+  state.el?.pause();
+  state.el = null; state.file = null; state.started = false; state.vol = 0;
+  aim();
+});

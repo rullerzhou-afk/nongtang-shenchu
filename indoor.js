@@ -1,3 +1,5 @@
+import { shut as closeKitchenDoor } from './vignettes/extra-backdoor.js';
+import { roomLinks, destinations, scenery, followUps, farewells, explorationControls } from './vignettes/exploration.js';
 const { ROOMS } = await import(new URL('./rooms.js' + new URL(import.meta.url).search, import.meta.url).href);
 // 固定机位和小剧场的内容按房间分文件放在 vignettes/ 下；这个文件只管公共部分（怎么看、怎么引导、怎么演）。
 const { ROOM_FILES, EXTRA_FILES = [] } = await import(new URL('./vignettes/index.js' + new URL(import.meta.url).search, import.meta.url).href);
@@ -40,6 +42,9 @@ const ORTHO_DIST = 91.5, SWAP_DIST = 900;    // 正交相机到目标点的距�
 const FILL = 1.12;                           // 当前层的外包范围在画面里留一点边
 const T_OPEN = 1300, T_WALK = 2300, T_PAUSE = 450, T_RISE = 1500, T_PULL = 2100, T_FADE = 650, T_LEVEL = 650;
 const CLAY = 0xdcd8cd;                       // 下面各层的浅灰底座颜色
+
+// 本局首次探索时提示选房，重新开局后可以再看到。
+let houseHintSeen = false;
 
 export function enterHouse(api) {
   const { T, THREE, W, pcam, ortho, ctl, rawRender, canvas, say } = api;
@@ -406,7 +411,7 @@ export function enterHouse(api) {
     pcam.fov = viewFov(room); pcam.near = .05; pcam.far = 520; pcam.updateProjectionMatrix();
     obstacles = furnitureBoxes(room); makeDoorMarks();
     phase = 'room'; stats.phase = phase; lastNow = performance.now(); zoomUi.classList.add('on'); syncZoom();
-    ui.classList.add('on'); upBtn.textContent = '全屋'; upBtn.setAttribute('aria-label', room.name + ' · 返回全屋'); upBtn.classList.add('on');
+    ui.classList.add('on'); upBtn.setAttribute('aria-label', room.name + ' · 返回全屋'); upBtn.classList.add('on');
     beginFixed(id);
     if (fixed) { if (!stats.fixedHint) { stats.fixedHint = true; say('按住左键拖动四处看　·　右键拖动或 W A S D 挪一挪　·　点一下物件看细节', 7500); } }
     else if (!stats.walkHint) { stats.walkHint = true; say('方向键或 WASD 走动　·　拖动转头　·　滚轮或右上角调节远近', 6000); }
@@ -553,6 +558,8 @@ export function enterHouse(api) {
   const KEYMAP = { w: 'w', arrowup: 'w', s: 's', arrowdown: 's', a: 'a', arrowleft: 'a', d: 'd', arrowright: 'd' };
   const onKey = e => {
     if (phase !== 'room') return; const key = e.key.toLowerCase();
+    if (key === ' ' && e.repeat && story.on && story.state === 'card') { e.preventDefault(); return; }
+    if (exploring && (key === 'enter' || key === ' ') && e.target.closest?.('#exploration button')) return;
     if (fixed) { if ('wasd'.includes(key) && key.length === 1 && !e.metaKey && !e.ctrlKey) { if (e.type === 'keydown') pan.keys.add(key); else pan.keys.delete(key); e.preventDefault(); return; }   /* W A S D 平移镜头 */ if (e.type === 'keydown' && fixedKey(key)) e.preventDefault(); return; }
     if ((key === 'e' || key === 'enter') && e.type === 'keydown' && activeDoor) { e.preventDefault(); goThroughDoor(activeDoor); return; }
     const k = KEYMAP[key]; if (!k) return; e.preventDefault(); if (e.type === 'keydown') keys.add(k); else keys.delete(k);
@@ -628,6 +635,7 @@ export function enterHouse(api) {
   document.body.append(fixedUi);
   function syncFixedUi() {
     fixedUi.style.display = fixed ? 'flex' : 'none'; if (!fixed) return;
+    if (exploring) { fixedUi.style.display = 'none'; return; }
     const next = VIG[fixed.id].next; fDoor.textContent = next?.label || '';
     const busy = fixed.focus || fixed.anim || story.on;
     // 鹿鹿 2026-11-17：不要“1/3”换站位，每间屋只有一个站的地方，别的视角都由物件带过去。换房间的文字只在没有光点引导时出现。
@@ -646,15 +654,24 @@ export function enterHouse(api) {
     storyPause(); cueClear(); subtitleOff(); story = storyOf(id);
     fixed = { id, spots: [VIG[id].spot], i: 0, base: null, focus: null }; fixed.base = spotBase(0); document.body.classList.add('cine');
     aimYaw = fixed.base.yaw; aimPitch = fixed.base.pitch; keys.clear(); vel.set(0, 0); stats.fixed = id + ':0'; if (VIG[id].linear) upBtn.classList.remove('on'); syncRoomExit(); makeGuides(); syncFixedUi(); storyUi();
+    if (exploring) {
+      clearGuides(); clearDoors(); storyExit.style.display = roomExit.style.display = 'none';
+      story.def?.resume?.(H, story.data); renderExploration(); return;
+    }
     if (story.beats.length && !story.finished) storyEnter();
     else if (story.started) story.def?.resume?.(H,story.data);
     // 这间屋站定后的引导（没有小剧场，或小剧场不在进行时），由房间文件的 cue 给出
     if (story.finished && story.beats.length && id !== 'hall' && VIG[id].replay !== false) { offerStoryReplay(id); return; }   // 房间文件写 replay: false：演过以后再进来不问“重走剧情”，直接是演完的样子（后天井）
     roomCue(id); syncExit(); makeDoors();
   }
-  function roomCue(id) { if (!story.on && VIG[id].cue) { const first = !story.seen; story.seen = true; const c = VIG[id].cue(H, { first }); if (c) cueSet({ lookFirst: !!c.sub && !c.screenCenter, ...c, run: c.run || (() => goRoom(VIG[id].next.to)), at: () => new THREE.Vector3().fromArray(c.at) }); } }
-  function endFixed() { if (!fixed) return; clearDoors(); storyExit.style.display = 'none'; storyEnd.style.display = 'none'; cancelRoomInteraction(); roomExit.style.display = 'none'; storyPause(); cueClear(); subtitleOff(); document.body.classList.remove('cine'); storySets.style.display = 'none'; storyBook.style.display = 'none'; fixed = null; ui.style.cursor = ''; clearGuides(); syncFixedUi(); }
-  function fixedClamp() { const b = fixed.focus || fixed.base; aimYaw = Math.max(b.yaw - b.dy, Math.min(b.yaw + b.dy, aimYaw)); aimPitch = Math.max(b.pitch - (b.down ?? b.dp), Math.min(b.pitch + b.dp, aimPitch)); }
+  function roomCue(id) { if (exploring) return; if (!story.on && VIG[id].cue) { const first = !story.seen; story.seen = true; const c = VIG[id].cue(H, { first }); if (c) cueSet({ lookFirst: !!c.sub && !c.screenCenter, ...c, run: c.run || (() => goRoom(VIG[id].next.to)), at: () => new THREE.Vector3().fromArray(c.at) }); } }
+  function endFixed() { if (!fixed) return; if (exploring) { stopExploringItem(); exploreUi.hide(); follow = null; hallObjects = false; } clearDoors(); storyExit.style.display = 'none'; storyEnd.style.display = 'none'; cancelRoomInteraction(); roomExit.style.display = 'none'; storyPause(); cueClear(); subtitleOff(); document.body.classList.remove('cine'); storySets.style.display = 'none'; storyBook.style.display = 'none'; fixed = null; ui.style.cursor = ''; clearGuides(); syncFixedUi(); }
+  function fixedClamp() {
+    if (exploring && !story.single && !follow && !fixed.focus && !stats.ended) return;
+    const b = fixed.focus || fixed.base;
+    aimYaw = Math.max(b.yaw - b.dy, Math.min(b.yaw + b.dy, aimYaw));
+    aimPitch = Math.max(b.pitch - (b.down ?? b.dp), Math.min(b.pitch + b.dp, aimPitch));
+  }
   function fixedTick(now) {
     const dt = Math.min(.05, (now - lastNow) / 1000); lastNow = now;
     storyTick(now);
@@ -670,7 +687,7 @@ export function enterHouse(api) {
     if (room?.floor && b0.pos.x > room.floor[0] && b0.pos.x < room.floor[1] && b0.pos.z > room.floor[2] && b0.pos.z < room.floor[3]) { want.x = Math.max(room.floor[0] + .22, Math.min(room.floor[1] - .22, want.x)); want.z = Math.max(room.floor[2] + .22, Math.min(room.floor[3] - .22, want.z)); }   // 不挪出这间屋的墙
     stats.pan = [+pan.x.toFixed(3), +pan.y.toFixed(3)];
     pcam.position.lerp(want, 1 - Math.exp(-dt * FIX.move));
-    pcam.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ')); pcam.updateMatrixWorld(); placeGuides(); placeDoors();
+    pcam.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ')); pcam.updateMatrixWorld(); placeGuides(); placeDoors(); if (exploring) exploreUi.place(pcam, canvas.getBoundingClientRect());
   }
   // ----- 坐下 / 起身：一串关键姿势，按时间依次过渡 -----
   function seatOf(o) {   // 椅面高度、朝向（靠背在哪一侧，人就背对哪一侧）
@@ -733,7 +750,7 @@ export function enterHouse(api) {
   function goRoom(to) {
     if (phase !== 'room' || !fixed || roomInteraction || fixed.focus || fixed.anim || !ROOMS[to]) return;
     const route = VIG[fixed.id]?.enterRoute;
-    if (route?.to === to) { runRoomRoute(route); return; }
+    if (!exploring && route?.to === to) { runRoomRoute(route); return; }
     cutTo(() => { const sp = VIG[to]?.spot || ROOMS[to]; pcam.position.fromArray(sp.pos); pcam.lookAt(new THREE.Vector3().fromArray(sp.look)); pcam.updateMatrixWorld(); startWalking(to); if (fixed) { pcam.position.copy(fixed.base.pos); yaw = aimYaw = fixed.base.yaw; pitch = aimPitch = fixed.base.pitch; } });
     stats.roomCuts = (stats.roomCuts || 0) + 1; api.hideToast(); window.__SFX?.play('step', { volume: .5 });
   }
@@ -754,7 +771,7 @@ export function enterHouse(api) {
     }
     return null;
   }
-  function leanTo(o) {   // 往物件凑近：沿视线往前走一段，停在看得清的距离，稍微低头
+  function closeupPosition(o) {   // 往物件凑近：沿视线往前走一段，停在看得清的距离，稍微低头
     const bb = new THREE.Box3().setFromObject(o), c = bb.getCenter(new THREE.Vector3()), r = .5 * bb.getSize(new THREE.Vector3()).length();
     const from = fixed.base.pos, dist = from.distanceTo(c), keep = Math.max(.75, Math.min(dist, r * 2.1 + .45));
     // 只在能站人的地方往前走：一小步一小步试，碰到家具或墙就停在前一步，不从桌子上方飘过去
@@ -767,18 +784,46 @@ export function enterHouse(api) {
     }
     if (!started) pos.copy(from);
     pos.y = lerp(from.y, Math.max((room.floorY > 1 ? room.floorY : 0) + 1.0, Math.min((room.floorY > 1 ? room.floorY : 0) + 1.6, c.y + .5)), .7 * Math.min(1, pos.distanceTo(from) / Math.max(.3, from.distanceTo(want))));
-    const a = aimFrom(pos, c); fixed.focus = { o, pos, yaw: a.yaw, pitch: a.pitch, dy: FIX.lean, dp: FIX.leanTilt };
+    return { pos, target: c };
+  }
+  function leanTo(o, lookAt) {
+    const { pos, target } = closeupPosition(o);
+    const a = aimFrom(pos, lookAt || target); fixed.focus = { o, pos, yaw: a.yaw, pitch: a.pitch, dy: FIX.lean, dp: FIX.leanTilt };
     aimYaw = a.yaw; aimPitch = a.pitch; stats.fixedFocus = o.name; stats.leans = (stats.leans || 0) + 1; if (fixedLabel(o)) say(fixedLabel(o), 0); else api.hideToast(); syncFixedUi();
   }
   function leanBack() { if (!fixed?.focus || fixed.anim) return; if (fixed.focus.seated) { standUp(); return; } fixed.focus = null; stats.fixedFocus = null; aimYaw = fixed.base.yaw; aimPitch = fixed.base.pitch; api.hideToast(); syncFixedUi(); }
-  function fixedTap(e) { if (fixed.replayChoice) return; if (roomInteraction) return; if (tryRoomProp(e)) return; if (story.on) { storyTap(e); return; } if (fixed.anim) return; const o = fixedPick(e); if (o && canSit(o) && o !== fixed.focus?.o) { if (fixed.focus?.seated) return; sitOn(o); } else if (fixed.focus?.seated) { if (!o) return; say(fixedLabel(o), 2200); } else if (o && o !== fixed.focus?.o) leanTo(o); else if (fixed.focus) leanBack(); }
+  function fixedTap(e) { if (fixed.replayChoice) return; if (roomInteraction) return; if (exploring) {
+      if (story.single) storyTap(e);
+      else {
+        const point = explorePick(e);
+        if (point) point.run();
+        else if (!follow) {
+          const object = fixedPick(e);
+          if (object) {
+            const next = story.beats.find(b => b.onFurniture === object.name);
+            if (canSit(object)) sitOn(object);
+            else leanTo(object, next && exploreItemPoint(next)?.at);
+            follow = next?.id || 'detail'; renderExploration();
+          }
+        }
+      }
+      return;
+    }
+    if (tryRoomProp(e)) return; if (story.on) { storyTap(e); return; } if (fixed.anim) return; const o = fixedPick(e); if (o && canSit(o) && o !== fixed.focus?.o) { if (fixed.focus?.seated) return; sitOn(o); } else if (fixed.focus?.seated) { if (!o) return; say(fixedLabel(o), 2200); } else if (o && o !== fixed.focus?.o) leanTo(o); else if (fixed.focus) leanBack(); }
   function fixedHover(e) {
+    if (exploring) {
+      const now = performance.now();
+      if (now - fixedHoverAt > 110) { fixedHoverAt = now; ui.style.cursor = !story.single && explorePick(e) ? 'pointer' : ''; }
+      return;
+    }
     if (fixed.anim || roomInteraction || fixed.replayChoice) return;
     const now = performance.now(); if (now - fixedHoverAt < 110) return; fixedHoverAt = now;
     const o = fixedPick(e); ui.style.cursor = o && o !== fixed.focus?.o ? 'pointer' : '';
     if (!fixed.focus) { if (o && (VIG[fixed.id]?.props?.find(x=>x.target===o.name)?.label || fixedLabel(o))) say((VIG[fixed.id]?.props?.find(x=>x.target===o.name)?.label || fixedLabel(o)) + (canSit(o) ? '　·　点一下坐下' : ''), 0); else if (stats.fixedHintDone) api.hideToast(); }
   }
   function fixedKey(key) {
+    if (exploring && (storyEnd.style.display !== 'none' || storyBook.style.display !== 'none')) return false;
+    if (exploring && !story.single) return false;
     if (fixed.replayChoice) return true;
     if (roomInteraction) { if (key === 'escape') closeRoomInteraction(); else if (roomInteraction.kind === 'book' && key === 'arrowright') turnBook(1); else if (roomInteraction.kind === 'book' && key === 'arrowleft') turnBook(-1); return true; }
     if (story.on) { if (story.state === 'card' && key === ' ') { storySpeak(); return true; } if ((story.state === 'card' || story.state === 'note') && (key === 'enter' || key === ' ' || key === 'escape')) { storyAdvance(); return true; } if (story.state === 'card' || story.state === 'note') return true; return key !== 'escape'; }
@@ -812,10 +857,16 @@ export function enterHouse(api) {
   // 聚焦：目标处透明，四周压暗
   const spot = mk('div', 'position:fixed;inset:0;z-index:6;pointer-events:none;opacity:0;transition:opacity .9s ease');
   // 标记：金色光点、一根细线、文字。目标不在画面里时只剩文字和箭头，贴在最近的画面边上
-  const cueEl = mk('button', 'outline:none;position:fixed;left:0;top:0;z-index:9;display:none;align-items:center;padding:14px 16px 14px 14px;margin:-27px 0 0 -27px;border:0;background:none;cursor:pointer;color:#fff;font:19px/1.2 ' + SERIF + ';letter-spacing:.32em;text-align:left;' + SHADOW,
-    '<i style="flex:none;width:26px;height:26px;box-sizing:border-box;border-radius:50%;border:3px solid ' + GOLD + ';background:rgba(230,194,122,.18);animation:cinepulse 1.9s ease-in-out infinite"></i><b style="flex:none;width:74px;height:1px;margin:0 12px 0 10px;background:linear-gradient(90deg,' + GOLD + ',rgba(230,194,122,.25))"></b><span></span>');
+  const cueEl = mk('button', '', '<i></i><b></b><span></span>');
+  cueEl.className = 'cine-marker';
   const cueSecondary = mk('button', 'outline:none;position:fixed;left:0;top:0;z-index:9;display:none;padding:16px;border:0;background:none;cursor:pointer;color:#ddd3bf;font:16px/1.2 ' + SERIF + ';letter-spacing:.3em;' + SHADOW);
-  cueSecondary.onclick = e => { e.stopPropagation(); const d = cue.def; if (!d?.secondary || !cue.shown || !fixed || fixed.anim) return; cueClear(); subtitleOff(); d.secondary.run(); };
+  cueSecondary.onclick = e => {
+    e.stopPropagation();
+    if (cueSecondary.classList.contains('explore-offer')) { beginExploration(); return; }
+    const d = cue.def;
+    if (!d?.secondary || !cue.shown || !fixed || fixed.anim) return;
+    cueClear(); subtitleOff(); d.secondary.run();
+  };
   const cue = { def: null, t0: 0, introStarted: false, shown: false, urged: false };
   cueEl.onclick = e => { e.stopPropagation(); cueFire(); };
   function cueSet(def) { cueClear(); cue.def = def; cue.t0 = performance.now(); cue.introStarted = cue.shown = cue.urged = false; if (fixed) syncFixedUi(); }
@@ -849,7 +900,16 @@ export function enterHouse(api) {
   // 剧情指定的开场转头先演完，再点亮交互提示。
   function cueTick(now) {
     cueSecondary.style.display = 'none';
-    const d = cue.def; if (!d || !fixed) { cueEl.style.display = 'none'; spot.style.opacity = 0; return; }
+    const d = cue.def;
+    const intro = atTutorialStart();
+    if (!exploring && fixed?.id === 'hall' && !roomInteraction &&
+        (intro || (story.finished && !fixed.anim && (!d || cue.shown)))) {
+      const r = canvas.getBoundingClientRect();
+      cueSecondary.classList.add('explore-offer'); cueSecondary.textContent = intro ? '跳过指引' : '自己随便逛逛';
+      cueSecondary.style.display = 'block';
+      cueSecondary.style.transform = `translate(${r.left + r.width / 2}px,${r.bottom - 150}px) translate(-50%,-50%)`;
+    }
+    if (!d || !fixed) { cueEl.style.display = 'none'; spot.style.opacity = 0; return; }
     const busy = !!fixed.focus && !(d.seated && fixed.focus.seated), t = now - cue.t0;   /* seated：坐着的时候也照样出这条引导 */
     if (!cue.shown && t >= d.delay && !busy && !fixed.anim) {
       if (!cue.introStarted && d.lookFirst) {
@@ -877,7 +937,7 @@ export function enterHouse(api) {
       cueEl.lastChild.innerHTML = d.label + hint;
       cueEl.style.transform = `translate(${r.left + r.width / 2}px,${r.top + r.height / 2}px) translate(-50%,-50%)`;
       if (d.secondary && !turning) {
-        cueSecondary.textContent = d.secondary.label; cueSecondary.style.display = 'block';
+        cueSecondary.classList.remove('explore-offer'); cueSecondary.textContent = d.secondary.label; cueSecondary.style.display = 'block';
         cueSecondary.style.transform = `translate(${r.left + r.width / 2}px,${r.top + r.height / 2 + 68}px) translate(-50%,-50%)`;
       }
       spot.style.opacity = 0; return;
@@ -949,6 +1009,7 @@ export function enterHouse(api) {
   const storyExit = mk('div', 'position:fixed;left:50%;bottom:clamp(140px,21vh,200px);transform:translateX(-50%);z-index:8;display:none;gap:18px;white-space:nowrap');
   const EXIT_CSS = 'outline:none;padding:.7em 1.6em .7em 1.9em;border:1px solid ' + GOLD + ';background:rgba(20,17,14,.5);cursor:pointer;color:#fff;font:15px/1 ' + SERIF + ';letter-spacing:.34em;' + SHADOW;
   function syncExit() {
+    if (exploring) { storyExit.style.display = 'none'; return; }
     const x = fixed && !fixed.replayChoice && phase === 'room' && storyOf(fixed.id).finished && VIG[fixed.id]?.story?.outro?.exit, list = x ? [].concat(x) : [];
     storyExit.textContent = ''; storyExit.style.display = list.length ? 'flex' : 'none';
     for (const o of list) { const b = document.createElement('button'); b.style.cssText = EXIT_CSS; b.textContent = o.label || o; b.onclick = e => { e.stopPropagation(); if (phase !== 'room' || !fixed || fixed.anim || roomInteraction) return; storyExit.style.display = 'none'; stats.exitChosen = o.to || (o.end ? 'end' : true); if (o.end) showEnd(o.end); else if (o.to) H.go(o.to); else document.getElementById('fpback')?.click(); }; storyExit.appendChild(b); }
@@ -960,12 +1021,13 @@ export function enterHouse(api) {
   // 收集册：平时只是左下角三个字；点开是一页说明，写全名，集到的变金色
   const storySets = mk('button', 'outline:none;position:fixed;left:clamp(20px,3vw,44px);bottom:clamp(22px,5vh,44px);z-index:8;display:none;padding:.6em 0;border:0;background:none;cursor:pointer;color:#fff;opacity:.7;font:14px/1 ' + SERIF + ';letter-spacing:.34em;' + SHADOW, '收集册');
   const storyBook = mk('div', 'position:fixed;inset:0;z-index:12;display:none;align-items:center;justify-content:center;background:rgba(8,6,4,.84);cursor:pointer;color:#f6f0e2;font:16px/2 ' + SERIF + ';letter-spacing:.2em');
-  storySets.onclick = e => { e.stopPropagation(); storySets.blur(); drawBook(); storyBook.style.display = 'flex'; stats.bookOpened = (stats.bookOpened || 0) + 1; }; storyBook.onclick = e => { e.stopPropagation(); storyBook.style.display = 'none'; };
+  storySets.onclick = e => { e.stopPropagation(); storySets.blur(); drawBook(); storyBook.style.display = 'flex'; if (exploring) exploreUi.hide(); stats.bookOpened = (stats.bookOpened || 0) + 1; }; storyBook.onclick = e => { e.stopPropagation(); storyBook.style.display = 'none'; if (exploring) renderExploration(); };
   const storyEnd = mk('div', 'position:fixed;inset:0;z-index:11;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:rgba(8,6,4,0);transition:background 2.4s ease;color:#f6f0e2;font:15px/1.8 ' + SERIF + ';letter-spacing:.3em;text-align:center');
   // 结束画面（鹿鹿 2026-11-18：阁楼望出去、鸟飞过之后，游戏在这里结束）。房间文件 outro.exit 里写 { label: '结束', end: { title, lines } }。
   // 画面慢慢暗下来，出一页字和两个按钮：“再看看”回到刚才的画面，“从头再来”重新开始
   function showEnd(o) {
-    const btn = (t, fn) => { const b = document.createElement('button'); b.style.cssText = EXIT_CSS; b.textContent = t; b.onclick = e => { e.stopPropagation(); fn(); }; return b; };
+    storyEnd.classList.toggle('explore-ending', exploring);
+    const btn = (t, fn) => { const b = document.createElement('button'); if (!exploring) b.style.cssText = EXIT_CSS; b.textContent = t; b.onclick = e => { e.stopPropagation(); fn(); }; return b; };
     const box = document.createElement('div'); box.style.cssText = 'opacity:0;transition:opacity 1.6s ease 1.2s;display:flex;flex-direction:column;align-items:center;gap:16px';
     box.innerHTML = '<div style="font:54px/1.3 ' + KAI + ';letter-spacing:.3em;padding-left:.3em">' + (o.title || '') + '</div>' + (o.lines || []).map(l => '<div style="color:#d8d0bd">' + l + '</div>').join('');
     const row = document.createElement('div'); row.style.cssText = 'display:flex;gap:18px;margin-top:28px';
@@ -973,7 +1035,7 @@ export function enterHouse(api) {
     storyEnd.textContent = ''; storyEnd.append(box); storyEnd.style.background = 'rgba(8,6,4,0)'; storyEnd.style.display = 'flex'; stats.ended = true;
     requestAnimationFrame(() => requestAnimationFrame(() => { storyEnd.style.background = 'rgba(8,6,4,.82)'; box.style.opacity = 1; }));
   }
-  function hideEnd() { if (storyEnd.style.display === 'none') return; storyEnd.style.display = 'none'; storyEnd.style.background = 'rgba(8,6,4,0)'; stats.ended = false; syncExit(); }
+  function hideEnd() { if (storyEnd.style.display === 'none') return; storyEnd.style.display = 'none'; storyEnd.style.background = 'rgba(8,6,4,0)'; stats.ended = false; syncExit(); if (exploring) { if (follow === 'ending') renderExploration(); else exploreOverview(); } }
   const SETS = {
     turn: { title: '三转一响', note: '七八十年代结婚要备齐的四样：三样会转的，一样会响的。', items: ['自行车', '缝纫机', '手表', '收音机'] },
     seven: { title: '开门七件事', note: '过日子天天离不开的七样。', items: ['柴', '米', '油', '盐', '酱', '醋', '茶'] },
@@ -1006,7 +1068,15 @@ export function enterHouse(api) {
       secondary:{ label:'继续看看', run() { fixed.replayChoice = false; makeGuides(); syncRoomExit(); roomCue(id); atEndingView(syncExit); } } });
   }
   function restartStory() {
-    if (!fixed || !story.finished || !story.beats.length || fixed.id === 'hall' || VIG[fixed.id].replay === false) return;
+    if (!fixed || !story.beats.length || VIG[fixed.id].replay === false) return;
+    if (fixed.id === 'hall') {
+      if (!exploring || story.single || follow) return;
+      hideHouseHint(); exploreUi.hide(); exploring = false; hallObjects = false;
+      if (!story.finished) {
+        // 跳过发生在挂衣裳之前，原来的道具还处于开场状态。
+        cutTo(resetView); storyEnter(); return;
+      }
+    } else if (!story.finished) return;
     const old = story, id = fixed.id;
     cueClear(); subtitleOff(); cancelRoomInteraction(); clearGuides();
     for (const t of old.timers) clearTimeout(t);
@@ -1055,19 +1125,43 @@ export function enterHouse(api) {
   }
   function showCard(b) {
     story.state = 'card'; api.hideToast(); window.__SFX?.play('card', { volume: .5 });
-    storyCard.innerHTML = '<div style="font:56px/1.2 ' + KAI + ';letter-spacing:.16em">' + b.card.hu + '</div><div style="margin-top:14px;letter-spacing:.34em;color:#c9c1ae">' + b.card.zh + '</div><div style="margin-top:10px;color:#e7e0d0">' + b.card.note + '</div><div style="margin-top:18px;display:flex;align-items:center;gap:12px;font-size:12px;letter-spacing:.3em;color:' + GOLD + '"><b data-snd style="display:inline-flex;width:38px;height:38px;border-radius:50%;border:1px solid ' + GOLD + ';align-items:center;justify-content:center;font-size:16px;font-weight:400;letter-spacing:0;transition:background .2s">🔈</b><span data-sndtext>听一听</span></div><div style="margin-top:16px;font-size:11px;line-height:2;letter-spacing:.3em;color:#9d9686">空格　听一听<br>回车　继续</div>';
+    storyCard.innerHTML = '<div style="font:56px/1.2 ' + KAI + ';letter-spacing:.16em">' + b.card.hu + '</div><div style="margin-top:14px;letter-spacing:.34em;color:#c9c1ae">' + (b.card.zh || b.card.hu) + '</div><div style="margin-top:10px;color:#e7e0d0">' + b.card.note + '</div><div style="margin-top:18px;display:flex;align-items:center;gap:12px;font-size:12px;letter-spacing:.3em;color:' + GOLD + '"><b data-snd style="display:inline-flex;width:38px;height:38px;border-radius:50%;border:1px solid ' + GOLD + ';align-items:center;justify-content:center;font-size:16px;font-weight:400;letter-spacing:0;transition:background .2s">🔈</b><span data-sndtext>听一听</span></div><div style="margin-top:16px;font-size:11px;line-height:2;letter-spacing:.3em;color:#9d9686">空格　听一听<br>回车　继续</div>';
     storyCard.querySelector('[data-snd]').parentNode.onclick = e => { e.stopPropagation(); storySpeak(); };
     storyCard.style.display = 'block'; storyShade.style.opacity = 1;
   }
-  function storySpeak() {   // 播这张卡的录音；文件放在 audio/ 下，名字见录音清单。还没有录音时只提示一下
-    const b = story.beats[story.i], dot = storyCard.querySelector('[data-snd]'), text = storyCard.querySelector('[data-sndtext]'); if (!b?.card || !dot) return;
-    dot.style.background = 'rgba(230,194,122,.35)'; setTimeout(() => { dot.style.background = ''; }, 260); stats.speaks = (stats.speaks || 0) + 1;
-    const a = new Audio(new URL('./audio/' + b.audio + '.m4a', import.meta.url).href); a.play().catch(() => { text.textContent = '录音待补'; });
+  let cardVoice = null, lastVoiceStart = 0;
+  function stopCardVoice() {
+    cardVoice?.pause();
+    cardVoice = null;
+  }
+  function playCardVoice(id, status, readyText) {
+    const now = performance.now(), url = new URL('./audio/' + id + '.m4a', import.meta.url).href;
+    if (cardVoice?.src === url && now - lastVoiceStart < 300) return false;
+    stopCardVoice();
+    const audio = new Audio(url);
+    cardVoice = audio;
+    lastVoiceStart = now;
+    status.textContent = readyText;
+    audio.play().catch(() => {
+      if (cardVoice !== audio) return;
+      status.textContent = '录音待补';
+      cardVoice = null;
+    });
+    return true;
+  }
+  function storySpeak() {
+    const b = story.beats[story.i], dot = storyCard.querySelector('[data-snd]');
+    if (!b?.card || !dot || !playCardVoice(b.audio, storyCard.querySelector('[data-sndtext]'), '听一听')) return;
+    dot.style.background = 'rgba(230,194,122,.35)';
+    setTimeout(() => { dot.style.background = ''; }, 260);
+    stats.speaks = (stats.speaks || 0) + 1;
   }
   function storyAdvance() {   // 收起词卡或字条，这一拍算完成
     const b = story.beats[story.i]; if (!story.on || !b || (story.state !== 'card' && story.state !== 'note')) return;
+    stopCardVoice();
     storyCard.style.display = storyNote.style.display = 'none'; storyShade.style.opacity = 0; story.done.add(b.id); stats.beatsDone = story.done.size; if (b.collect) { const cs = Array.isArray(b.collect[0]) ? b.collect : [b.collect]; for (const c of cs) lit[c[0]].add(c[1]); stats.collected = (stats.collected || 0) + cs.length; storySets.textContent = '收集册 · ' + cs.map(c => SETS[c[0]].items[c[1]]).join('') + ' ✓';   /* collect 可以一次写几样：[['seven', 2], ['seven', 3]] */ storySets.style.color = GOLD; storySets.style.opacity = 1; setTimeout(() => { storySets.textContent = '收集册'; storySets.style.color = '#fff'; storySets.style.opacity = .7; }, 4200); } story.state = 'between'; storyUi();
     try { b.after?.(H, story.data); } catch (e) { console.error('after', b.id, e); }   // 这一拍的词卡收起以后顺手做的事（厨房：后门关回去），不挡下一拍
+    if (story.single) { exploreFinish(b); return; }
     if (story.i >= story.beats.length - 1) { storyWait(); return; }   // 最后一拍：收尾
     storyNext();
   }
@@ -1156,7 +1250,9 @@ export function enterHouse(api) {
     const prev=interactionButton('‹ 上一页','本子上一页',()=>turnBook(-1)), next=interactionButton('下一页 ›','本子下一页',()=>turnBook(1));
     prev.disabled=b.spread===0||b.busy;next.disabled=b.spread>=b.total-1||b.busy;prev.style.opacity=prev.disabled?'.25':'1';next.style.opacity=next.disabled?'.25':'1';
     const label=document.createElement('span');label.textContent=`${b.spread*2+1}—${b.spread*2+2} 页`;label.style.cssText='color:#e6c27a;font:14px serif;padding:12px';
-    row.append(prev,label,next,interactionButton('放回桌上','放回本子',closeRoomInteraction));
+    const putBack = interactionButton('放回桌上','放回本子',closeRoomInteraction);
+    putBack.disabled = b.busy;
+    row.append(prev,label,next,putBack);
     // 两边页缘也是点击目标；透明按钮只在阅读状态出现，不挡退出。
     for(const [side,dir,off] of [['left',-1,prev.disabled],['right',1,next.disabled]]){const edge=interactionButton('',side==='left'?'点左页翻回':'点右页翻后',()=>turnBook(dir));edge.disabled=off;edge.style.cssText+=`;position:absolute;${side}:25%;top:26%;width:18%;height:46%;`;interactionUi.append(edge)}
   }
@@ -1185,18 +1281,179 @@ export function enterHouse(api) {
       });return;
     }
     if(current.kind==='motion')return;
+    stopCardVoice();
     interactionUi.style.display='none';roomInteraction=null;current.done?.();resumeRoomCue();
   }
   function cancelRoomInteraction() {
+    stopCardVoice();
     clearRoomJobs();story.data?.notebook?.reset();bookReturn=null;roomInteraction=null;interactionUi.style.display='none';
     story.def?.suspend?.(H,story.data);
   }
+  // 自由探索使用独立的单物件播放进度，和引导路线共用原场景、分镜、配音及收集册。
+  const exploreUi = explorationControls(doorTemplate);
+  const houseHint = $('house-pick-hint');
+  function hideHouseHint() {
+    houseHint.removeEventListener('animationend', hideHouseHint);
+    houseHint.hidden = true;
+    upBtn.removeAttribute('aria-describedby');
+  }
+  function showFirstHouseHint() {
+    if (houseHintSeen) return;
+    houseHintSeen = true;
+    houseHint.hidden = false;
+    upBtn.setAttribute('aria-describedby', houseHint.id);
+    houseHint.addEventListener('animationend', hideHouseHint, { once: true });
+  }
+  let exploring = false, freePoints = [], follow = null, hallObjects = false;
+  function resetView() {
+    stopRoomDrag(); pan.keys.clear(); pan.x = pan.y = 0;
+    fixed.anim = fixed.focus = null; fixed.base = spotBase(0);
+    pcam.position.copy(fixed.base.pos); yaw = aimYaw = fixed.base.yaw; pitch = aimPitch = fixed.base.pitch;
+    pcam.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ')); pcam.updateMatrixWorld();
+    stats.fixedFocus = null;
+  }
+  function stopExploringItem() {
+    hideHouseHint();
+    const current = story;
+    // 先收尾还在移动的道具，再撤回本拍的读物、声音和回调；新房间不会收到旧动作。
+    if (current.single) {
+      for (let i = tweens.length - 1; i >= 0; i--) if (tweens[i].st === current) {
+        const [w] = tweens.splice(i, 1); w.fn(1);
+      }
+      if (fixed.id === 'kitchen' && current.beats[0].id === 'backdoor' && current.data.door) {
+        closeKitchenDoor(current.data.door);
+      }
+    }
+    storyPause(); cancelRoomInteraction();
+    for (const a of sounds) a.pause(); sounds.length = 0;
+    if (current.data?.flock) { current.data.flock.t0 = 0; current.data.flock.g.visible = false; }
+    story = storyOf(fixed.id); fixed.anim = fixed.focus = null;
+    storyUi(); subtitleOff(); api.hideToast();
+  }
+  function exploreOverview() {
+    stopExploringItem(); follow = null;
+    story.def?.resume?.(H, story.data);
+    cutTo(resetView); renderExploration();
+  }
+  function exploreGo(to) {
+    const exit = VIG[fixed?.id]?.exit;
+    if (exit?.to === to && exit.route) { runRoomRoute(exit); return; }
+    stopExploringItem(); follow = null; hallObjects = false;
+    goRoom(to);
+  }
+  function atTutorialStart() {
+    return !exploring && fixed?.id === 'hall' && story.on && story.i === 0 && story.state === 'guide';
+  }
+  function beginExploration() {
+    if (exploring || fixed?.id !== 'hall' || (!story.finished && !atTutorialStart())) return;
+    exploring = true; cueClear(); clearDoors(); clearGuides();
+    exploreOverview(); showFirstHouseHint();
+  }
+  function chooseItem(b) {
+    if (story.single || !fixed) return;
+    const owner = storyOf(fixed.id), target = beatTarget(b);
+    if (target && !b.pose && !b.sit) {
+      const close = closeupPosition(target);
+      b = { ...b, pose: { pos: close.pos.toArray(), look: b.markAt || close.target.toArray() } };
+    }
+    fixed.focus = null;
+    story = { ...newStory(fixed.id, owner.def), beats: [b], tasks: [], data: owner.data,
+      i: 0, on: true, state: 'guide', single: true, target };
+    follow = null; storyUi(); renderExploration(); storyRun();
+  }
+  function exploreFinish(b) {
+    const next = followUps[fixed.id]?.[b.id];
+    if (next || (fixed.id === 'loft' && b.id === 'out') || b.stay) {
+      storyPause(); story = storyOf(fixed.id);
+      follow = next || (b.stay ? 'detail' : 'ending'); subtitleOff(); renderExploration();
+    } else exploreOverview();
+  }
+  function endExplorationScene(ending) {
+    const keepView = follow === 'ending';
+    if (!keepView) { stopExploringItem(); resetView(); follow = null; }
+    exploreUi.hide();
+    // 道别时留在相应的场景：字条在客堂桌面，出门时转向弄堂大门。
+    const pose = ending === farewells.hall ? VIG.hall.story.beats.find(b => b.read).pose
+      : ending === farewells.courtyard ? { pos: VIG.courtyard.spot.pos, look: [0, 1.35, 0] } : null;
+    if (pose) {
+      cutTo(() => {
+        pcam.position.fromArray(pose.pos);
+        const a = aimFrom(pcam.position, new THREE.Vector3().fromArray(pose.look));
+        fixed.base = { ...fixed.base, pos: pcam.position.clone(), ...a };
+        yaw = aimYaw = a.yaw; pitch = aimPitch = a.pitch;
+      });
+    }
+    showEnd(ending);
+  }
+  function exploreItemPoint(b) {
+    const target = beatTarget(b);
+    if (!target && !b.markAt) return null;
+    const targets = [target, ...(b.also || []).map(n => H.find(n))].filter(Boolean);
+    return { label: b.label || b.card.hu, at: b.markAt ? new THREE.Vector3().fromArray(b.markAt) : centerOf(target),
+      targets, run: () => chooseItem(b) };
+  }
+  function renderExploration() {
+    if (!exploring || !fixed) return;
+    const id = fixed.id, def = VIG[id], parent = roomLinks[id];
+    const bottom = [{ label: '回' + parent[0], run: () => exploreGo(parent[1]) }];
+    const upstairs = id === 'mezzanine' || id === 'tingzi';
+    if (upstairs) bottom.push({ label: destinations.landing, run: () => exploreGo('landing') });
+    freePoints = [];
+    if (story.single || follow) bottom.unshift({ label: '回到房间', run: exploreOverview });
+    if (follow === 'ending') {
+      bottom.unshift({ label: '结束', run: () => endExplorationScene(def.story.outro.exit[0].end) });
+    } else if (follow && follow !== 'detail') {
+      freePoints.push(exploreItemPoint(def.story.beats.find(b => b.id === follow)));
+    } else if (!story.single && !follow) {
+      for (const door of room.doors) {
+        if (door.to === parent[1] || (upstairs && door.to === 'landing') || (id === 'hall' && hallObjects)) continue;
+        const anchor = def.doors?.find(d => d.to === door.to)?.at || door.frame.c;
+        freePoints.push({ label: destinations[door.to], at: new THREE.Vector3().fromArray(anchor), door: true, hallChoice: id === 'hall', run: () => exploreGo(door.to) });
+      }
+      if (id !== 'hall' || hallObjects) {
+        const props = def.props || scenery[id] || [];
+        const chained = Object.values(followUps[id] || {});
+        for (let b of def.story?.beats || []) {
+          if (chained.includes(b.id) || props.some(p => p.target === b.target)) continue;
+          // 自由看词卡时保留客堂陈设当前的状态，教程动作只在教程里播放。
+          if (id === 'hall' && b.card) b = { ...b, label: b.card.hu, act: null, sit: null, then: null, enter: null };
+          freePoints.push(exploreItemPoint(b));
+        }
+        for (const prop of props) freePoints.push(exploreItemPoint({ ...prop, id: prop.target, stay: !prop.card }));
+      }
+      if (id === 'hall') {
+        bottom.push({ label: hallObjects ? '看看去处' : '看看客堂物件',
+          run: () => { hallObjects = !hallObjects; renderExploration(); } });
+        bottom.push({ label: '回看指引', run: restartStory });
+      }
+      if (farewells[id]) bottom.push({ label: farewells[id].title, run: () => endExplorationScene(farewells[id]) });
+    }
+    freePoints = freePoints.filter(Boolean);
+    exploreUi.render(freePoints, bottom, () => endExplorationScene(farewells.anywhere));
+    syncFixedUi(); exploreUi.place(pcam, canvas.getBoundingClientRect());
+  }
+  function explorePick(e) {
+    const r = canvas.getBoundingClientRect();
+    ndc.set((e.clientX - r.left) / r.width * 2 - 1, 1 - (e.clientY - r.top) / r.height * 2);
+    ray.setFromCamera(ndc, pcam);
+    let nearest = Infinity, chosen = null;
+    for (const point of freePoints) {
+      if (!point.targets) continue;
+      const hit = ray.intersectObjects(point.targets, true).find(hit => {
+        for (let node = hit.object; node; node = node.parent) if (!node.visible) return false;
+        return true;
+      });
+      if (hit && hit.distance < nearest) { nearest = hit.distance; chosen = point; }
+    }
+    return chosen;
+  }
+
   function resumeRoomCue() { if(story.on&&story.state==='guide')storyGuide();else {makeGuides();if(fixed)roomCue(fixed.id);}syncFixedUi(); }
   function showPropCard(def) {
     roomInteraction={kind:'prop'};cueClear();subtitleOff();const row=controls();row.append(interactionButton('收起','收起物件说明',closeRoomInteraction));
     const card=document.createElement('div');card.style.cssText='position:absolute;left:clamp(24px,5vw,80px);top:35%;width:280px;max-width:65vw;background:rgba(20,17,14,.78);border-top:1px solid #e6c27a;padding:28px;color:#f6f0e2;font:17px/1.9 "Songti SC",serif;pointer-events:auto';
     const title=document.createElement('div');title.textContent=def.card.hu;title.style.cssText='font:42px "Kaiti SC",serif;color:white';const note=document.createElement('p');note.textContent=def.card.note;const status=document.createElement('small');status.setAttribute('role','status');status.style.color='#e6c27a';card.append(title,note,status);interactionUi.append(card);
-    if(def.audio)row.append(interactionButton('听一听','播放这张卡的录音',()=>{status.textContent='';new Audio(new URL('./audio/'+def.audio+'.m4a',import.meta.url).href).play().catch(()=>{status.textContent='录音待补'})}));   // 物件词卡也能放录音（亭子间 TZ03–TZ06）；文件还没有时只提示一下
+    if (def.audio) row.append(interactionButton('听一听', '播放这张卡的录音', () => playCardVoice(def.audio, status, '')));
   }
   function tryRoomProp(e) {
     if(!VIG[fixed.id]?.props||fixed.anim||story.on&&story.state!=='guide')return false;
@@ -1245,7 +1502,7 @@ export function enterHouse(api) {
   }
 
   function leave() {
-    if (!alive) return; alive = false; stopRoomDrag(); cancelRoomInteraction(); roomRoute = null; roomExit.remove(); interactionUi.remove(); storyDispose(); endFixed(); fixedUi.remove();
+    if (!alive) return; if (exploring && fixed) endFixed(); exploreUi.remove(); alive = false; stopRoomDrag(); cancelRoomInteraction(); roomRoute = null; roomExit.remove(); interactionUi.remove(); storyDispose(); endFixed(); fixedUi.remove();
     restoreLevels(); restoreNeighbours(); if (roof) roof.visible = true;
     canvasEl.removeEventListener('pointermove', onMove); canvasEl.removeEventListener('pointerdown', onDown); canvasEl.removeEventListener('pointerup', onUp); canvasEl.style.cursor = '';
     for (const w of [window, W]) { w.removeEventListener('keydown', onKey); w.removeEventListener('keyup', onKey); w.removeEventListener('blur', onBlur); }
@@ -1260,5 +1517,5 @@ export function enterHouse(api) {
     levelsNav.querySelectorAll('button').forEach(b => { b.onclick = null; });
   }
 
-  return { tick, draw, leave, stats, setLevel, enterRoom, leaveRoom, inspect: () => ({ interaction: roomInteraction && {kind:roomInteraction.kind, spread:stories.tingzi?.data.notebook?.spread, raised:stories.tingzi?.data.notebook?.raised, busy:stories.tingzi?.data.notebook?.busy}, route:roomRoute?.def.to || null, fixed: fixed && { anim: !!fixed.anim, seated: !!fixed.focus?.seated, follow: false, guides: guides.filter(g => g.el.style.display !== 'none').map(g => g.o.name), story: { room: story.id, on: story.on, beat: story.beats[story.i]?.id || null, state: story.state, done: [...story.done], finished: !!story.finished, tv: !!tvState.hallTv, coat: !!stories.hall?.data.coat?.visible, sub: stats.subtitle || null }, cue: cue.def && { label: cue.def.label, shown: cue.shown, urged: cue.urged, visible: cueEl.style.display !== 'none' && cueEl.style.opacity !== '0', spot: spot.style.opacity, rect: cueEl.getBoundingClientRect().toJSON() }, id: fixed.id, spot: fixed.i, spots: fixed.spots.length, focus: fixed.focus?.o.name || null, yaw, pitch, baseYaw: fixed.base.yaw }, room: stats.room, phase, level, position: pcam.position.toArray(), fov: pcam.fov, targetFov: room ? viewFov(room) : null, activeDoor: activeDoor?.to || null, free: room ? free(pcam.position.x, pcam.position.z) : null, obstacles: obstacles.map(b => [...b]) }), get phase() { return phase; }, get level() { return level; } };
+  return { tick, draw, leave, stats, setLevel, enterRoom, leaveRoom, inspect: () => ({ interaction: roomInteraction && {kind:roomInteraction.kind, spread:stories.tingzi?.data.notebook?.spread, raised:stories.tingzi?.data.notebook?.raised, busy:stories.tingzi?.data.notebook?.busy}, route:roomRoute?.def.to || null, fixed: fixed && { exploration: exploring ? freePoints.map(p => ({ label: p.label, at: p.at.toArray() })) : null, anim: !!fixed.anim, seated: !!fixed.focus?.seated, follow: false, guides: guides.filter(g => g.el.style.display !== 'none').map(g => g.o.name), story: { room: story.id, on: story.on, beat: story.beats[story.i]?.id || null, state: story.state, done: [...story.done], finished: !!story.finished, tv: !!tvState.hallTv, coat: !!stories.hall?.data.coat?.visible, sub: stats.subtitle || null }, cue: cue.def && { label: cue.def.label, shown: cue.shown, urged: cue.urged, visible: cueEl.style.display !== 'none' && cueEl.style.opacity !== '0', spot: spot.style.opacity, rect: cueEl.getBoundingClientRect().toJSON() }, id: fixed.id, spot: fixed.i, spots: fixed.spots.length, focus: fixed.focus?.o.name || null, yaw, pitch, baseYaw: fixed.base.yaw }, room: stats.room, phase, level, position: pcam.position.toArray(), fov: pcam.fov, targetFov: room ? viewFov(room) : null, activeDoor: activeDoor?.to || null, free: room ? free(pcam.position.x, pcam.position.z) : null, obstacles: obstacles.map(b => [...b]) }), get phase() { return phase; }, get level() { return level; } };
 }

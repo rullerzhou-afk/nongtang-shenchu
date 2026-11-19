@@ -66,6 +66,22 @@ body.entry-direct #card,body.entry-direct #hint{opacity:0;transition:opacity .5s
 #fpskip{right:clamp(20px,3vw,44px);bottom:clamp(18px,3vh,34px)}
 #fpback{left:clamp(20px,3vw,44px);top:clamp(18px,3vh,34px)}
 #fpup{left:clamp(20px,3vw,44px);top:calc(clamp(18px,3vh,34px) + 52px)}
+#fpup[aria-describedby="house-pick-hint"]{opacity:1}
+#fpup[aria-describedby="house-pick-hint"]::before{
+  content:"";position:absolute;right:calc(100% - 8px);top:50%;width:17px;height:17px;box-sizing:border-box;
+  border:2px solid #e6c27a;border-radius:50%;background:rgba(230,194,122,.22);pointer-events:none;
+  transform:translateY(-50%);animation:house-pick-ring 1.6s ease-out 2 forwards;
+}
+@keyframes house-pick-ring{
+  0%{opacity:0;box-shadow:0 0 0 0 rgba(230,194,122,.65)}
+  18%{opacity:1;box-shadow:0 0 0 1px #755322,0 0 0 2px rgba(230,194,122,.7),0 0 8px #e6c27a}
+  68%{opacity:1;box-shadow:0 0 0 1px #755322,0 0 0 8px rgba(230,194,122,.28),0 0 10px #e6c27a}
+  100%{opacity:0;box-shadow:0 0 0 12px rgba(230,194,122,0)}
+}
+#house-pick-hint{font-size:15px;color:#fff;text-shadow:0 1px 3px #241608,0 2px 8px #181009;position:absolute;left:100%;top:50%;transform:translateY(-50%);white-space:nowrap;pointer-events:none;letter-spacing:.14em}
+#house-pick-hint:not([hidden]){animation:house-pick-hint 8s forwards}
+@keyframes house-pick-hint{0%,100%{opacity:0}4%,91%{opacity:1}}
+@media(max-width:540px){#house-pick-hint{left:1.5em;top:100%;transform:none}}
 #roomzoom{position:fixed;right:clamp(20px,3vw,44px);top:clamp(18px,3vh,34px);z-index:7;display:none;gap:6px}
 #roomzoom.on{display:flex}#roomzoom button{font:inherit;font-size:12px;letter-spacing:.12em;padding:.65em 1em;color:var(--ink);background:rgba(244,239,225,.9);border:1px solid rgba(47,74,58,.3);cursor:pointer}
 #roomzoom button:disabled{opacity:.48;cursor:default}
@@ -144,6 +160,41 @@ body.entry-direct #card,body.entry-direct #hint{opacity:0;transition:opacity .5s
 #fpnote .bar{background:rgba(230,194,122,.22)}
 #fpnote .bar i{background:#e6c27a}
 #fpnote .step{color:#9d9686;letter-spacing:.4em}
+/* 剧情与自由探索共用同一个光点：金环、引线、宋体白字。 */
+.cine-marker{
+  --ring:26px;--line:74px;--stroke:3px;
+  position:fixed;left:0;top:0;z-index:9;display:none;align-items:center;
+  margin:-27px 0 0 -27px;padding:14px 16px 14px 14px;border:0;background:none;
+  color:#fff;cursor:pointer;outline:none;text-align:left;white-space:nowrap;
+  font:19px/1.2 "Songti SC","Noto Serif SC",serif;letter-spacing:.32em;
+  text-shadow:0 2px 10px rgba(0,0,0,.95),0 0 2px #000;
+}
+.cine-marker>i{flex:none;box-sizing:border-box;width:var(--ring);height:var(--ring);border:var(--stroke) solid #e6c27a;border-radius:50%;background:rgba(230,194,122,.18);animation:cinepulse 1.9s ease-in-out infinite}
+.cine-marker>b{flex:none;width:var(--line);height:1px;margin:0 12px 0 10px;background:linear-gradient(90deg,#e6c27a,rgba(230,194,122,.25))}
+#exploration[hidden],#exploration [hidden]{display:none}
+.explore-marks .cine-marker{--ring:14px;--line:32px;--stroke:2px;display:flex;margin:0;padding:9px;font-size:15px;letter-spacing:.22em;z-index:8}
+.explore-marks .cine-marker>b{margin:0 8px}
+.explore-marks .cine-marker>i{animation:none;box-shadow:0 0 7px rgba(230,194,122,.7)}
+.explore-marks .cine-marker:only-child{--ring:26px;--line:74px;--stroke:3px;font-size:19px;letter-spacing:.32em}
+.explore-marks .cine-marker:only-child>i,.explore-marks .cine-marker:hover>i,.explore-marks .cine-marker:focus-visible>i{animation:cinepulse 1.9s ease-in-out infinite}
+.explore-marks [data-flip=true]{flex-direction:row-reverse}
+.explore-marks [data-flip=true]>b{background:linear-gradient(270deg,#e6c27a,rgba(230,194,122,.25))}
+.explore-marks [data-side]:not([data-side=""])>i,.explore-marks [data-side]:not([data-side=""])>b,.explore-marks.no-object-marks button>i,.explore-marks.no-object-marks button>b{display:none}
+.explore-marks [data-side=left]>span:before{content:"‹";color:#e6c27a;margin-right:.4em}
+.explore-marks [data-side=right]>span:after{content:"›";color:#e6c27a;margin-left:.4em}
+.explore-tools,.explore-exits{position:fixed;z-index:19;display:flex;gap:8px;justify-content:center}
+.explore-tools{top:clamp(62px,10vh,90px);right:clamp(16px,3vw,42px)}
+.explore-exits{bottom:30px;left:50%;transform:translateX(-50%);width:max-content;max-width:80vw;flex-wrap:wrap}
+body:has(#room-object-controls[style*="display: block"]) .explore-exits{bottom:76px}
+.explore-tools button,.explore-exits button,.explore-ending button{
+  padding:.8em 1em;border:0;background:none;color:white;cursor:pointer;
+  font:14px/1.2 "Songti SC","Noto Serif SC",serif;letter-spacing:.3em;
+  text-shadow:0 2px 10px rgba(0,0,0,.95),0 0 2px #000;
+}
+.explore-tools button{font-size:12px;opacity:.68}
+.explore-exits button{opacity:.88}
+.explore-tools button:hover,.explore-exits button:hover{opacity:1}
+#exploration button:focus-visible,.explore-offer:focus-visible,.explore-ending button:focus-visible{text-decoration:underline;text-underline-offset:.4em;outline:none}
 </style>
 </head>
 <body>
@@ -167,7 +218,7 @@ body.entry-direct #card,body.entry-direct #hint{opacity:0;transition:opacity .5s
 
 <div id="hint"><span>拖动 · 转看</span><i></i><span>双指滑动或右键 · 平移</span><i></i><span>捏合或滚轮 · 远近</span></div>
 <div id="fpui"></div><div id="fpdot" role="button" aria-label="门环"></div>
-<button id="fpskip" class="fpchip">跳过</button><button id="fpback" class="fpchip">回到街区</button><button id="fpup" class="fpchip">全屋</button><div id="fptoast"></div>
+<button id="fpskip" class="fpchip">跳过</button><button id="fpback" class="fpchip">回到街区</button><button id="fpup" class="fpchip">全屋<span id="house-pick-hint" hidden>点这里，可以选房间。</span></button><div id="fptoast"></div>
 <div id="roomzoom" role="group" aria-label="房间远近"><button id="roomwider" aria-label="放宽视野">− 远一点</button><button id="roomcloser" aria-label="靠近观察">＋ 近一点</button></div>
 <div id="roomfade" aria-live="polite"></div>
 <img id="fpsnap" alt="" aria-hidden="true">
@@ -179,8 +230,8 @@ body.entry-direct #card,body.entry-direct #hint{opacity:0;transition:opacity .5s
 <div id="caption">一九九四年 · 上海<small>进门这一段还没接上</small></div>
 <div id="loading"><h1>弄堂深处</h1><div class="sub">一九九四年 · 上海</div><div class="bar"><i></i></div>
   <div class="step" id="lstep">正在搬砖瓦…</div><div class="sec" id="lsec"></div><div class="sec" id="lsize" style="color:#e3c88e"></div><div class="sec" id="lnote" style="text-align:center;line-height:2;letter-spacing:.08em">首次打开需下载约 690MB，再次打开会快很多　·　<a href="https://github.com/rullerzhou-afk/nongtang-shenchu" target="_blank" rel="noopener" style="color:#e3c88e">GitHub</a></div><div class="sec" id="lcopy" style="position:absolute;bottom:22px;left:0;right:0;text-align:center;font-size:11px;letter-spacing:.06em;opacity:.55">© 2026 <a href="https://github.com/rullerzhou-afk" target="_blank" rel="noopener" style="color:inherit">rullerzhou-afk</a> 保留所有权利</div></div>
-<script type="module" src="./home.js?v=hall-stair-cue-20261118"></script>
-<script type="module" src="./bgm.js?v=title-autoplay-20261118"></script>
+<script type="module" src="./home.js?v=explore-20261119"></script>
+<script type="module" src="./bgm.js?v=game-only-20261119"></script>
 <script type="module" src="./sfx.js?v=20261118b"></script>
 <script>/* 部署版：真实下载进度；首页能玩之后在后台把屋里的东西下完（scripts/build_cf_site.py） */
 (function () {
