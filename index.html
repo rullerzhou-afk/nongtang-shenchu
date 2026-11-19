@@ -195,6 +195,11 @@ body:has(#room-object-controls[style*="display: block"]) .explore-exits{bottom:7
 .explore-exits button{opacity:.88}
 .explore-tools button:hover,.explore-exits button:hover{opacity:1}
 #exploration button:focus-visible,.explore-offer:focus-visible,.explore-ending button:focus-visible{text-decoration:underline;text-underline-offset:.4em;outline:none}
+
+#loading-footer{position:absolute;inset:auto 12px max(18px,env(safe-area-inset-bottom));text-align:center}
+#loading #lsource{display:inline-block;padding:6px 10px;margin-bottom:4px;color:#b7ac96;text-decoration:none;line-height:1.4}
+#loading #lsource:hover,#loading #lsource:focus-visible{color:#e3c88e;text-decoration:underline;text-underline-offset:3px}
+@media(max-height:480px){#loading{gap:10px;padding-bottom:65px;box-sizing:border-box}#loading-footer{bottom:6px}}
 </style>
 </head>
 <body>
@@ -229,7 +234,7 @@ body:has(#room-object-controls[style*="display: block"]) .explore-exits{bottom:7
 <div id="fade"></div>
 <div id="caption">一九九四年 · 上海<small>进门这一段还没接上</small></div>
 <div id="loading"><h1>弄堂深处</h1><div class="sub">一九九四年 · 上海</div><div class="bar"><i></i></div>
-  <div class="step" id="lstep">正在搬砖瓦…</div><div class="sec" id="lsec"></div><div class="sec" id="lsize" style="color:#e3c88e"></div><div class="sec" id="lnote" style="text-align:center;line-height:2;letter-spacing:.08em">首次打开需下载约 690MB，再次打开会快很多　·　<a href="https://github.com/rullerzhou-afk/nongtang-shenchu" target="_blank" rel="noopener" style="color:#e3c88e">GitHub</a></div><div class="sec" id="lcopy" style="position:absolute;bottom:22px;left:0;right:0;text-align:center;font-size:11px;letter-spacing:.06em;opacity:.55">© 2026 <a href="https://github.com/rullerzhou-afk" target="_blank" rel="noopener" style="color:inherit">rullerzhou-afk</a> 保留所有权利</div></div>
+  <div class="step" id="lstep">正在搬砖瓦…</div><div class="sec" id="lsec"></div><div class="sec" id="lsize" style="color:#e3c88e"></div><div class="sec" id="lnote" style="text-align:center;line-height:2;letter-spacing:.08em">首次打开需下载约 690MB，再次打开会快很多</div><footer id="loading-footer"><a class="sec" id="lsource" href="https://github.com/rullerzhou-afk/nongtang-shenchu" target="_blank" rel="noopener">项目源码 ↗</a><div class="sec" id="lcopy" style="line-height:1.5;letter-spacing:.06em;opacity:.55">© 2026 <a href="https://github.com/rullerzhou-afk" target="_blank" rel="noopener" style="color:inherit">rullerzhou-afk</a> 保留所有权利</div></footer></div>
 <script type="module" src="./home.js?v=explore-20261119"></script>
 <script type="module" src="./bgm.js?v=game-only-20261119"></script>
 <script type="module" src="./sfx.js?v=20261118b"></script>
